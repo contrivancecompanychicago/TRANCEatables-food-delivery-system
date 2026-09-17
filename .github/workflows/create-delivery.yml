@@ -1,0 +1,22 @@
+name: Create DoorDash delivery
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-delivery:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - run: pip install requests
+
+      - name: Create delivery
+        env:
+          DOORDASH_TOKEN: ${{ secrets.DOORDASH_TOKEN }}
+        run: python create_delivery.py
