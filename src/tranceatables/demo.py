@@ -1,10 +1,11 @@
-"""Run a single non-physical Stage 0 feasibility example."""
+"""Command-line demonstration for the non-physical Stage 0 core."""
 
 from .feasibility import evaluate_delivery
 from .models import DeliveryRequest, FoodHandling, RobotState
 
 
 def main() -> None:
+    """Evaluate one safe-to-screen example and print the decision."""
     request = DeliveryRequest(
         order_id="TRANCE-STAGE0-001",
         distance_km=1.5,
