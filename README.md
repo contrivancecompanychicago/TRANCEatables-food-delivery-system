@@ -119,6 +119,19 @@ TRANCEATABLES_DB_PATH=demo.sqlite3 mcp dev src/tranceatables/mcp_server.py
 
 Use opaque test identifiers only. Do not enter names, addresses, health information, payment data, credentials, or secrets.
 
+## Farm-to-fork simulation
+
+The MCP server now includes an auditable food-lot chain:
+
+```text
+planned -> harvested -> farm_packed -> picked_up -> kitchen_received
+        -> meal_prepared -> meal_packaged -> out_for_delivery -> delivered
+```
+
+Each active stage can be cancelled. Stages cannot be skipped. Optional location codes, observed temperatures, and short notes are stored as append-only events; recorded temperatures are observations and do not certify food safety.
+
+See [`docs/FARM_TO_FORK.md`](docs/FARM_TO_FORK.md) for the workflow, MCP resources and tools, example inputs, and safety boundary.
+
 ## Vendor updates with CULAP Data Farm
 
 Vendors can use the [CULAP Data Farm agent](https://culapsedatafarm-agent-lab.erichilarysmithsr.chatgpt.site) to draft repository-aware implementation plans, identify tests, and document operational changes.
@@ -129,7 +142,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 order state and persistence and the Stage 1.5 simulation-only MCP server are implemented. Later stages may add mapping, dispatch, robot adapters, food-temperature telemetry, and human oversight. See `docs/STAGE_1.md` for the current scope and exit criteria.
+Stage 1 order state and persistence, the Stage 1.5 simulation-only MCP server, and simulation-only farm-to-fork traceability are implemented. Later stages may add mapping, dispatch, robot adapters, food-temperature telemetry, and human oversight. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 
