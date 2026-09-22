@@ -132,6 +132,12 @@ Each active stage can be cancelled. Stages cannot be skipped. Optional location 
 
 See [`docs/FARM_TO_FORK.md`](docs/FARM_TO_FORK.md) for the workflow, MCP resources and tools, example inputs, and safety boundary.
 
+### CULAPSE Data Farm checkpoints
+
+The Kaggriculture Agent Lab documentation maps strongly to the `planned` and `harvested` stages. The MCP adapter exposes the revised `S = P x Mf x C` planning model and potential-versus-collected harvest analysis with FPP-05 routing-loss detection.
+
+It does **not** validate `farm_packed`: shed inventory is not evidence of food-grade packing, sanitation, sealed lots, labeling, temperature control, or package integrity. See [`docs/CULAPSE_STAGE_MAPPING.md`](docs/CULAPSE_STAGE_MAPPING.md).
+
 ## Vendor updates with CULAP Data Farm
 
 Vendors can use the [CULAP Data Farm agent](https://culapsedatafarm-agent-lab.erichilarysmithsr.chatgpt.site) to draft repository-aware implementation plans, identify tests, and document operational changes.
