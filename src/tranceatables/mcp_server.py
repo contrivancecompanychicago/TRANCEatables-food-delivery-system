@@ -23,6 +23,12 @@ def about() -> dict:
     return api.about()
 
 
+@mcp.resource("tranceatables://knowledge/culapse-data-farm/stage-fit")
+def culapse_stage_fit_resource() -> dict:
+    """Read how CULAPSE evidence maps to farm-to-fork stages and its limits."""
+    return api.culapse_stage_fit()
+
+
 @mcp.resource("tranceatables://orders/{order_id}")
 def order_resource(order_id: str) -> dict:
     """Read the current snapshot of one simulated order."""
@@ -74,6 +80,32 @@ def evaluate_simulated_delivery(
         payload_capacity_kg=payload_capacity_kg,
         operational=operational,
         reserve_fraction=reserve_fraction,
+    )
+
+
+@mcp.tool()
+def evaluate_culapse_planning_checkpoint(
+    production_reliability: float,
+    maintenance_feasibility: float,
+    capital_sufficiency: float,
+) -> dict:
+    """Calculate the CULAPSE planning stability classification for simulation."""
+    return api.evaluate_culapse_planning(
+        production_reliability=production_reliability,
+        maintenance_feasibility=maintenance_feasibility,
+        capital_sufficiency=capital_sufficiency,
+    )
+
+
+@mcp.tool()
+def evaluate_culapse_harvest_checkpoint(
+    potential_yield_units: float,
+    collected_yield_units: float,
+) -> dict:
+    """Calculate harvest completion and FPP-05 routing-loss evidence."""
+    return api.evaluate_culapse_harvest(
+        potential_yield_units=potential_yield_units,
+        collected_yield_units=collected_yield_units,
     )
 
 
