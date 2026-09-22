@@ -8,6 +8,11 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .feasibility import evaluate_delivery
+from .culapse_adapter import (
+    SOURCE as CULAPSE_SOURCE,
+    evaluate_harvest_checkpoint,
+    evaluate_planning_checkpoint,
+)
 from .farm_to_fork import (
     ALLOWED_FARM_TO_FORK_TRANSITIONS,
     FarmToForkRecord,
@@ -125,6 +130,31 @@ class SimulationMCPAPI:
             ],
             "data_rule": "Use opaque test identifiers only; do not enter names, addresses, health data, payment data, credentials, or secrets.",
         }
+
+    @staticmethod
+    def culapse_stage_fit() -> dict[str, Any]:
+        return CULAPSE_SOURCE
+
+    @staticmethod
+    def evaluate_culapse_planning(
+        *,
+        production_reliability: float,
+        maintenance_feasibility: float,
+        capital_sufficiency: float,
+    ) -> dict[str, Any]:
+        return evaluate_planning_checkpoint(
+            production_reliability,
+            maintenance_feasibility,
+            capital_sufficiency,
+        )
+
+    @staticmethod
+    def evaluate_culapse_harvest(
+        *, potential_yield_units: float, collected_yield_units: float
+    ) -> dict[str, Any]:
+        return evaluate_harvest_checkpoint(
+            potential_yield_units, collected_yield_units
+        )
 
     @staticmethod
     def evaluate(
