@@ -4,9 +4,16 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
+from datetime import datetime, timezone
 from typing import Any
 
 from .feasibility import evaluate_delivery
+from .farm_to_fork import (
+    ALLOWED_FARM_TO_FORK_TRANSITIONS,
+    FarmToForkRecord,
+    FarmToForkStatus,
+)
+from .farm_to_fork_repository import FarmToForkEvent, SQLiteFarmToForkRepository
 from .models import DeliveryRequest, FoodHandling, RobotState
 from .order_state import ALLOWED_TRANSITIONS, Order, OrderStatus
 from .repository import OrderEvent, SQLiteOrderRepository
@@ -59,11 +66,44 @@ def _event_dict(event: OrderEvent) -> dict[str, Any]:
     }
 
 
+def _trace_dict(record: FarmToForkRecord) -> dict[str, Any]:
+    return {
+        "trace_id": record.trace_id,
+        "farm_code": record.farm_code,
+        "product_code": record.product_code,
+        "order_id": record.order_id,
+        "status": record.status.value,
+        "version": record.version,
+        "created_at": record.created_at,
+        "updated_at": record.updated_at,
+        "allowed_next_statuses": sorted(
+            status.value for status in ALLOWED_FARM_TO_FORK_TRANSITIONS[record.status]
+        ),
+        "simulation_only": True,
+    }
+
+
+def _trace_event_dict(event: FarmToForkEvent) -> dict[str, Any]:
+    return {
+        "event_id": event.event_id,
+        "trace_id": event.trace_id,
+        "from_status": event.from_status.value if event.from_status else None,
+        "to_status": event.to_status.value,
+        "actor": event.actor,
+        "location_code": event.location_code,
+        "temperature_c": event.temperature_c,
+        "note": event.note,
+        "occurred_at": event.occurred_at,
+        "version": event.version,
+    }
+
+
 class SimulationMCPAPI:
     """Simulation facade over the Stage 0 evaluator and Stage 1 order service."""
 
     def __init__(self, database_path: str | Path) -> None:
         self.service = OrderService(SQLiteOrderRepository(database_path))
+        self.farm_to_fork = SQLiteFarmToForkRepository(database_path)
 
     @staticmethod
     def about() -> dict[str, Any]:
@@ -75,6 +115,7 @@ class SimulationMCPAPI:
                 "create a simulated order",
                 "read simulated order state and history",
                 "advance or cancel a simulated order using Stage 1 rules",
+                "trace a simulated food lot from farm planning through delivery",
             ],
             "cannot_do": [
                 "control or dispatch a physical robot",
@@ -178,3 +219,72 @@ class SimulationMCPAPI:
             expected_version=expected_version,
         )
         return _order_dict(order)
+
+    def create_farm_to_fork_trace(
+        self,
+        *,
+        trace_id: str,
+        farm_code: str,
+        product_code: str,
+        order_id: str | None = None,
+        actor: str = "mcp-simulator",
+    ) -> dict[str, Any]:
+        timestamp = datetime.now(timezone.utc).isoformat()
+        record = FarmToForkRecord(
+            trace_id=_safe_identifier(trace_id, "trace_id"),
+            farm_code=_safe_identifier(farm_code, "farm_code"),
+            product_code=_safe_identifier(product_code, "product_code"),
+            order_id=_safe_identifier(order_id, "order_id") if order_id else None,
+            status=FarmToForkStatus.PLANNED,
+            version=0,
+            created_at=timestamp,
+            updated_at=timestamp,
+        )
+        return _trace_dict(
+            self.farm_to_fork.create(record, actor=_safe_identifier(actor, "actor"))
+        )
+
+    def get_farm_to_fork_trace(self, trace_id: str) -> dict[str, Any]:
+        return _trace_dict(
+            self.farm_to_fork.get(_safe_identifier(trace_id, "trace_id"))
+        )
+
+    def get_farm_to_fork_history(self, trace_id: str) -> dict[str, Any]:
+        safe_trace_id = _safe_identifier(trace_id, "trace_id")
+        return {
+            "trace_id": safe_trace_id,
+            "events": [
+                _trace_event_dict(event)
+                for event in self.farm_to_fork.events(safe_trace_id)
+            ],
+            "simulation_only": True,
+        }
+
+    def transition_farm_to_fork_trace(
+        self,
+        *,
+        trace_id: str,
+        target_status: str,
+        actor: str = "mcp-simulator",
+        location_code: str | None = None,
+        temperature_c: float | None = None,
+        note: str | None = None,
+        expected_version: int | None = None,
+    ) -> dict[str, Any]:
+        if note is not None and len(note) > 200:
+            raise ValueError("note cannot exceed 200 characters")
+        if temperature_c is not None and not -50 <= temperature_c <= 150:
+            raise ValueError("temperature_c must be between -50 and 150")
+        record = self.farm_to_fork.transition(
+            _safe_identifier(trace_id, "trace_id"),
+            FarmToForkStatus(target_status),
+            actor=_safe_identifier(actor, "actor"),
+            location_code=(
+                _safe_identifier(location_code, "location_code") if location_code else None
+            ),
+            temperature_c=temperature_c,
+            note=note,
+            occurred_at=datetime.now(timezone.utc).isoformat(),
+            expected_version=expected_version,
+        )
+        return _trace_dict(record)
