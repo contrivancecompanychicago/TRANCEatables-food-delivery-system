@@ -13,7 +13,7 @@ from tranceatables import (
 )
 
 
-class TestClock:
+class ManualClock:
     def __init__(self) -> None:
         self.value = datetime(2026, 9, 22, 12, 0, tzinfo=timezone.utc)
 
@@ -24,7 +24,7 @@ class TestClock:
 
 
 def make_service(tmp_path):
-    return OrderService(SQLiteOrderRepository(tmp_path / "orders.sqlite3"), clock=TestClock())
+    return OrderService(SQLiteOrderRepository(tmp_path / "orders.sqlite3"), clock=ManualClock())
 
 
 def test_full_stage_1_lifecycle_and_audit_history(tmp_path) -> None:
@@ -72,9 +72,9 @@ def test_invalid_transition_does_not_mutate_persisted_order(tmp_path) -> None:
 
 def test_order_survives_repository_reopen(tmp_path) -> None:
     path = tmp_path / "orders.sqlite3"
-    first = OrderService(SQLiteOrderRepository(path), clock=TestClock())
+    first = OrderService(SQLiteOrderRepository(path), clock=ManualClock())
     first.create_order(DeliveryRequest("TRN-003", 1.5, 2.5))
-    second = OrderService(SQLiteOrderRepository(path), clock=TestClock())
+    second = OrderService(SQLiteOrderRepository(path), clock=ManualClock())
     assert second.get_order("TRN-003").request.payload_kg == 2.5
 
 
