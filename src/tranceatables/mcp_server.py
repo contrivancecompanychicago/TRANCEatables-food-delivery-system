@@ -35,6 +35,18 @@ def order_history_resource(order_id: str) -> dict:
     return api.get_history(order_id)
 
 
+@mcp.resource("tranceatables://farm-to-fork/{trace_id}")
+def farm_to_fork_resource(trace_id: str) -> dict:
+    """Read one simulated farm-to-fork trace."""
+    return api.get_farm_to_fork_trace(trace_id)
+
+
+@mcp.resource("tranceatables://farm-to-fork/{trace_id}/history")
+def farm_to_fork_history_resource(trace_id: str) -> dict:
+    """Read the append-only events for one farm-to-fork trace."""
+    return api.get_farm_to_fork_history(trace_id)
+
+
 @mcp.tool()
 def evaluate_simulated_delivery(
     order_id: str,
@@ -113,6 +125,58 @@ def transition_simulated_order(
         target_status=target_status,
         actor=actor,
         reason=reason,
+        expected_version=expected_version,
+    )
+
+
+@mcp.tool()
+def create_simulated_farm_to_fork_trace(
+    trace_id: str,
+    farm_code: str,
+    product_code: str,
+    order_id: str | None = None,
+    actor: str = "mcp-simulator",
+) -> dict:
+    """Create a simulated food-lot trace starting in planned state."""
+    return api.create_farm_to_fork_trace(
+        trace_id=trace_id,
+        farm_code=farm_code,
+        product_code=product_code,
+        order_id=order_id,
+        actor=actor,
+    )
+
+
+@mcp.tool()
+def get_simulated_farm_to_fork_trace(trace_id: str) -> dict:
+    """Read a simulated trace and its permitted next states."""
+    return api.get_farm_to_fork_trace(trace_id)
+
+
+@mcp.tool()
+def get_simulated_farm_to_fork_history(trace_id: str) -> dict:
+    """Read the append-only event history for a simulated trace."""
+    return api.get_farm_to_fork_history(trace_id)
+
+
+@mcp.tool()
+def transition_simulated_farm_to_fork_trace(
+    trace_id: str,
+    target_status: str,
+    actor: str = "mcp-simulator",
+    location_code: str | None = None,
+    temperature_c: float | None = None,
+    note: str | None = None,
+    expected_version: int | None = None,
+) -> dict:
+    """Advance or cancel a simulated farm-to-fork trace."""
+    return api.transition_farm_to_fork_trace(
+        trace_id=trace_id,
+        target_status=target_status,
+        actor=actor,
+        location_code=location_code,
+        temperature_c=temperature_c,
+        note=note,
         expected_version=expected_version,
     )
 
