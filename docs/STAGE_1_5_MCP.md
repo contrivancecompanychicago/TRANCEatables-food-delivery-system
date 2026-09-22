@@ -24,6 +24,12 @@ The model does not receive arbitrary database access. It sees only the resources
 | `get_simulated_order` | tool | Reads an order and allowed next states |
 | `get_simulated_order_history` | tool | Reads audit history |
 | `transition_simulated_order` | tool | Applies one Stage 1 transition |
+| `tranceatables://farm-to-fork/{trace_id}` | resource | Reads a food-lot trace |
+| `tranceatables://farm-to-fork/{trace_id}/history` | resource | Reads trace handoff events |
+| `create_simulated_farm_to_fork_trace` | tool | Creates a planned trace |
+| `get_simulated_farm_to_fork_trace` | tool | Reads its current stage |
+| `get_simulated_farm_to_fork_history` | tool | Reads its audit trail |
+| `transition_simulated_farm_to_fork_trace` | tool | Records the next simulated handoff |
 
 No prompt templates are exposed in Stage 1.5. They are not necessary for the first testable server.
 
