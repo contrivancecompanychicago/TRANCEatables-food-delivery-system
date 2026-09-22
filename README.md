@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-Stage 1 adds an auditable order lifecycle and SQLite persistence to the Chicago-focused food-service and autonomous-delivery research prototype.
+Stage 1.5 adds a local, simulation-only Model Context Protocol (MCP) server to the auditable Stage 1 order lifecycle.
 
 ## Stage 0 goal
 
@@ -105,6 +105,20 @@ draft -> accepted -> prepared -> packaged -> ready -> assigned
 
 Every active state can be cancelled. Invalid transitions are rejected without modifying the persisted order or its audit history.
 
+## Stage 1.5 MCP server
+
+The MCP server lets an MCP-capable AI host inspect and exercise the existing TRANCEatables rules through a deliberately limited simulation interface. It exposes delivery feasibility, simulated order creation, state transitions, snapshots, and audit history. It cannot place a real order, take payment, contact a customer, call a delivery provider, or control a physical robot.
+
+Start with the novice-friendly walkthrough in [`docs/STAGE_1_5_MCP.md`](docs/STAGE_1_5_MCP.md).
+
+```bash
+python -m pip install -e '.[mcp,dev]'
+python -m pytest -q
+TRANCEATABLES_DB_PATH=demo.sqlite3 mcp dev src/tranceatables/mcp_server.py
+```
+
+Use opaque test identifiers only. Do not enter names, addresses, health information, payment data, credentials, or secrets.
+
 ## Vendor updates with CULAP Data Farm
 
 Vendors can use the [CULAP Data Farm agent](https://culapsedatafarm-agent-lab.erichilarysmithsr.chatgpt.site) to draft repository-aware implementation plans, identify tests, and document operational changes.
@@ -115,7 +129,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 order state and persistence are implemented. Stage 1.5 may expose read-only resources and simulation-only order tools through a TRANCEatables MCP server. Later stages may add mapping, dispatch, robot adapters, food-temperature telemetry, human oversight, and simulation. See `docs/STAGE_1.md` for the current scope and exit criteria.
+Stage 1 order state and persistence and the Stage 1.5 simulation-only MCP server are implemented. Later stages may add mapping, dispatch, robot adapters, food-temperature telemetry, and human oversight. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 
