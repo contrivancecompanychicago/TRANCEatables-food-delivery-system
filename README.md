@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-Stage 0 establishes a testable foundation for a Chicago-focused food-service and autonomous-delivery research prototype.
+Stage 1 adds an auditable order lifecycle and SQLite persistence to the Chicago-focused food-service and autonomous-delivery research prototype.
 
 ## Stage 0 goal
 
@@ -89,6 +89,22 @@ The example targets the DoorDash API and may create a real delivery or incur cha
 - `tests/` — baseline acceptance tests
 - `create_delivery.py` — DoorDash Drive delivery creation example
 
+## Stage 1 contents
+
+- `src/tranceatables/order_state.py` — validated order lifecycle rules
+- `src/tranceatables/repository.py` — SQLite snapshots and append-only audit events
+- `src/tranceatables/service.py` — API-neutral create, retrieve, transition, and history operations
+- `tests/test_order_state.py` — lifecycle, persistence, audit, duplicate, and concurrency tests
+- `docs/STAGE_1.md` — Stage 1 design, safety boundary, and acceptance criteria
+
+The Stage 1 lifecycle is:
+
+```text
+draft -> accepted -> prepared -> packaged -> ready -> assigned
+```
+
+Every active state can be cancelled. Invalid transitions are rejected without modifying the persisted order or its audit history.
+
 ## Vendor updates with CULAP Data Farm
 
 Vendors can use the [CULAP Data Farm agent](https://culapsedatafarm-agent-lab.erichilarysmithsr.chatgpt.site) to draft repository-aware implementation plans, identify tests, and document operational changes.
@@ -99,7 +115,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 will add an order state machine and persistence. Later stages may add mapping, dispatch, robot adapters, food-temperature telemetry, human oversight, and simulation. See `docs/STAGE_0.md` for the current scope and exit criteria.
+Stage 1 order state and persistence are implemented. Stage 1.5 may expose read-only resources and simulation-only order tools through a TRANCEatables MCP server. Later stages may add mapping, dispatch, robot adapters, food-temperature telemetry, human oversight, and simulation. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 
