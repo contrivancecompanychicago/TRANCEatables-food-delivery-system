@@ -30,6 +30,9 @@ The model does not receive arbitrary database access. It sees only the resources
 | `get_simulated_farm_to_fork_trace` | tool | Reads its current stage |
 | `get_simulated_farm_to_fork_history` | tool | Reads its audit trail |
 | `transition_simulated_farm_to_fork_trace` | tool | Records the next simulated handoff |
+| `tranceatables://knowledge/culapse-data-farm/stage-fit` | resource | Explains supported CULAPSE stage evidence |
+| `evaluate_culapse_planning_checkpoint` | tool | Applies the revised CULAPSE stability model |
+| `evaluate_culapse_harvest_checkpoint` | tool | Calculates harvest completion and FPP-05 evidence |
 
 No prompt templates are exposed in Stage 1.5. They are not necessary for the first testable server.
 
