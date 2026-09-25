@@ -29,6 +29,12 @@ def culapse_stage_fit_resource() -> dict:
     return api.culapse_stage_fit()
 
 
+@mcp.resource("tranceatables://integrations/january-ai/restaurants")
+def january_ai_restaurant_integration_resource() -> dict:
+    """Read placement, configuration status, and safety boundaries for January AI."""
+    return api.january_ai_status()
+
+
 @mcp.resource("tranceatables://orders/{order_id}")
 def order_resource(order_id: str) -> dict:
     """Read the current snapshot of one simulated order."""
@@ -107,6 +113,12 @@ def evaluate_culapse_harvest_checkpoint(
         potential_yield_units=potential_yield_units,
         collected_yield_units=collected_yield_units,
     )
+
+
+@mcp.tool()
+def fetch_january_ai_restaurants() -> dict:
+    """Fetch read-only restaurant reference data when the opt-in adapter is configured."""
+    return api.fetch_january_ai_restaurants()
 
 
 @mcp.tool()
