@@ -20,6 +20,7 @@ from .farm_to_fork import (
 )
 from .farm_to_fork_repository import FarmToForkEvent, SQLiteFarmToForkRepository
 from .models import DeliveryRequest, FoodHandling, RobotState
+from .january_ai import JanuaryAIRestaurantClient, JanuaryAISettings
 from .order_state import ALLOWED_TRANSITIONS, Order, OrderStatus
 from .repository import OrderEvent, SQLiteOrderRepository
 from .service import OrderService
@@ -109,6 +110,7 @@ class SimulationMCPAPI:
     def __init__(self, database_path: str | Path) -> None:
         self.service = OrderService(SQLiteOrderRepository(database_path))
         self.farm_to_fork = SQLiteFarmToForkRepository(database_path)
+        self.january_ai = JanuaryAIRestaurantClient(JanuaryAISettings.from_environment())
 
     @staticmethod
     def about() -> dict[str, Any]:
@@ -134,6 +136,12 @@ class SimulationMCPAPI:
     @staticmethod
     def culapse_stage_fit() -> dict[str, Any]:
         return CULAPSE_SOURCE
+
+    def january_ai_status(self) -> dict[str, Any]:
+        return self.january_ai.status()
+
+    def fetch_january_ai_restaurants(self) -> dict[str, Any]:
+        return self.january_ai.list_restaurants()
 
     @staticmethod
     def evaluate_culapse_planning(
