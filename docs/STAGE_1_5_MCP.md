@@ -33,6 +33,8 @@ The model does not receive arbitrary database access. It sees only the resources
 | `tranceatables://knowledge/culapse-data-farm/stage-fit` | resource | Explains supported CULAPSE stage evidence |
 | `evaluate_culapse_planning_checkpoint` | tool | Applies the revised CULAPSE stability model |
 | `evaluate_culapse_harvest_checkpoint` | tool | Calculates harvest completion and FPP-05 evidence |
+| `tranceatables://integrations/january-ai/restaurants` | resource | Reports January AI placement and configuration status |
+| `fetch_january_ai_restaurants` | tool | Opt-in, read-only restaurant reference-data fetch |
 
 No prompt templates are exposed in Stage 1.5. They are not necessary for the first testable server.
 
