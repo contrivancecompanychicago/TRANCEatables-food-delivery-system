@@ -138,6 +138,12 @@ The Kaggriculture Agent Lab documentation maps strongly to the `planned` and `ha
 
 It does **not** validate `farm_packed`: shed inventory is not evidence of food-grade packing, sanitation, sealed lots, labeling, temperature control, or package integrity. See [`docs/CULAPSE_STAGE_MAPPING.md`](docs/CULAPSE_STAGE_MAPPING.md).
 
+### January AI restaurant reference integration
+
+The supplied [January AI restaurants endpoint](https://partners.january.ai/v1.2/restaurants) is integrated as an opt-in, read-only reference-data adapter. It fits before simulated order creation and between `kitchen_received` and `meal_prepared`; it does not belong in farm planning, harvesting, packing verification, payment, or robot dispatch.
+
+The adapter is disabled by default and does not guess the provider's authorization method or response fields. Configure the exact header name and complete value from official partner documentation. See [`docs/JANUARY_AI_RESTAURANTS.md`](docs/JANUARY_AI_RESTAURANTS.md).
+
 ## Vendor updates with CULAP Data Farm
 
 Vendors can use the [CULAP Data Farm agent](https://culapsedatafarm-agent-lab.erichilarysmithsr.chatgpt.site) to draft repository-aware implementation plans, identify tests, and document operational changes.
