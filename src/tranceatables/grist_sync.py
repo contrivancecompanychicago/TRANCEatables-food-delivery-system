@@ -63,8 +63,10 @@ TABLE_MAPPINGS: tuple[TableMapping, ...] = (
     ),
     TableMapping(
         """SELECT 'ORDER-EVENT-' || event_id AS EventId, order_id AS OrderId,
-        from_status AS PreviousStatus, to_status AS NewStatus, actor AS Actor,
-        reason AS Reason, occurred_at AS OccurredAt, version AS Version
+        from_status AS PreviousStatus, to_status AS NewStatus,
+        CASE WHEN from_status IS NULL THEN 'order_created'
+             ELSE 'order_transition' END AS EventType,
+        reason AS Message, occurred_at AS OccurredAt
         FROM order_events ORDER BY event_id""",
         "OrderEvents", "EventId", {"OccurredAt": _epoch},
     ),
@@ -154,6 +156,10 @@ class GristClient:
             raise GristSyncError(f"Grist connection failed: {error.reason}") from error
         return json.loads(body) if body else {}
 
+    def columns(self, table: str) -> set[str]:
+        result = self._request("GET", f"/tables/{quote(table, safe='')}/columns")
+        return {column["id"] for column in result.get("columns", [])}
+
     def records(self, table: str) -> list[dict[str, Any]]:
         result = self._request("GET", f"/tables/{quote(table, safe='')}/records")
         return list(result.get("records", []))
@@ -203,6 +209,19 @@ def sync_table(connection: sqlite3.Connection, client: GristClient, mapping: Tab
     return SyncResult(mapping.grist_table, len(source), len(creates), len(updates), unchanged, not apply)
 
 
+def _validate_schemas(connection: sqlite3.Connection, client: GristClient) -> None:
+    """Validate every destination before any writes can begin."""
+    errors: list[str] = []
+    for mapping in TABLE_MAPPINGS:
+        source = _source_rows(connection, mapping)
+        required = set(source[0]) if source else {mapping.key_column}
+        missing = sorted(required - client.columns(mapping.grist_table))
+        if missing:
+            errors.append(f"{mapping.grist_table}: missing {', '.join(missing)}")
+    if errors:
+        raise GristSyncError("Grist schema preflight failed; no writes attempted: " + "; ".join(errors))
+
+
 def sync_database(database_path: str | Path, client: GristClient, *, apply: bool = False) -> tuple[SyncResult, ...]:
     path = Path(database_path)
     if not path.is_file():
@@ -210,6 +229,7 @@ def sync_database(database_path: str | Path, client: GristClient, *, apply: bool
     connection = sqlite3.connect(path)
     connection.row_factory = sqlite3.Row
     try:
+        _validate_schemas(connection, client)
         return tuple(sync_table(connection, client, mapping, apply=apply) for mapping in TABLE_MAPPINGS)
     finally:
         connection.close()
