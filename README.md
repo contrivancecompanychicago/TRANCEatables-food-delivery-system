@@ -133,6 +133,20 @@ Simulated dispatch assigns the mission, Stage 1 order, and robot in one SQLite t
 
 See [`docs/STAGE_2_ROBOT_MISSIONS.md`](docs/STAGE_2_ROBOT_MISSIONS.md) for lifecycle rules, persistence, MCP capabilities, Grist mapping, acceptance criteria, and the physical-safety boundary.
 
+## Stage 2.1 Grist synchronization
+
+Stage 2.1 adds an optional, one-way SQLite-to-Grist audit mirror for orders, robots, missions, events, approvals, generated telemetry, and safety observations. SQLite remains authoritative. Synchronization defaults to dry-run and performs stable-key upserts only when `--apply` is supplied.
+
+```bash
+export GRIST_BASE_URL="https://your-team.getgrist.com"
+export GRIST_DOC_ID="your-document-id"
+export GRIST_API_KEY="your-secret-api-key"
+python -m tranceatables.grist_sync --database tranceatables.sqlite3
+python -m tranceatables.grist_sync --database tranceatables.sqlite3 --apply
+```
+
+Never commit the API key. Grist remains a dashboard and audit mirror and cannot dispatch or control a robot. See [`docs/STAGE_2_1_GRIST_SYNC.md`](docs/STAGE_2_1_GRIST_SYNC.md).
+
 ## Farm-to-fork simulation
 
 The MCP server now includes an auditable food-lot chain:
@@ -168,7 +182,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, and Stage 2 simulation-only robot mission management are implemented. Later stages may add a Grist synchronization adapter, mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
+Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, and Stage 2.1 one-way Grist synchronization are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 
