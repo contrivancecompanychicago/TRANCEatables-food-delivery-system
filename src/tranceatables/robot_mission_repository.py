@@ -326,7 +326,9 @@ class SQLiteRobotMissionRepository:
     ) -> None:
         if decision not in {"approved", "rejected"}:
             raise ValueError("decision must be approved or rejected")
-        self.get_mission(mission_id)
+        mission = self.get_mission(mission_id)
+        if mission.status is not MissionStatus.AWAITING_APPROVAL:
+            raise MissionEligibilityError("mission must be awaiting approval")
         with self._connect() as connection:
             connection.execute(
                 """INSERT INTO operator_approvals
@@ -355,8 +357,9 @@ class SQLiteRobotMissionRepository:
                 raise ConcurrentUpdateError(
                     f"expected version {expected_version}, found {current.version}"
                 )
-            if current.status is not MissionStatus.APPROVED:
-                raise MissionEligibilityError("mission must be approved")
+            updated = transition_mission(
+                current, MissionStatus.DISPATCHED, occurred_at=occurred_at
+            )
             approval = connection.execute(
                 "SELECT decision FROM operator_approvals WHERE mission_id = ?",
                 (mission_id,),
@@ -379,9 +382,6 @@ class SQLiteRobotMissionRepository:
                 raise MissionEligibilityError("robot must be available")
             if not bool(robot["operational"]) or robot["battery_percent"] < 50:
                 raise MissionEligibilityError("robot is not eligible for dispatch")
-            updated = transition_mission(
-                current, MissionStatus.DISPATCHED, occurred_at=occurred_at
-            )
             connection.execute(
                 """UPDATE robot_missions SET status = ?, version = ?, updated_at = ?
                 WHERE mission_id = ?""",
@@ -481,7 +481,9 @@ class SQLiteRobotMissionRepository:
             raise ValueError("speed_mps cannot be negative")
         self.get_robot(robot_id)
         if mission_id is not None:
-            self.get_mission(mission_id)
+            mission = self.get_mission(mission_id)
+            if mission.robot_id != robot_id:
+                raise ValueError("mission is assigned to a different robot")
         with self._connect() as connection:
             cursor = connection.execute(
                 """INSERT INTO robot_telemetry
@@ -524,7 +526,9 @@ class SQLiteRobotMissionRepository:
     ) -> SafetyEvent:
         self.get_robot(robot_id)
         if mission_id is not None:
-            self.get_mission(mission_id)
+            mission = self.get_mission(mission_id)
+            if mission.robot_id != robot_id:
+                raise ValueError("mission is assigned to a different robot")
         with self._connect() as connection:
             cursor = connection.execute(
                 """INSERT INTO robot_safety_events
