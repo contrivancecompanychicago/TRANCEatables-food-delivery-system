@@ -220,7 +220,8 @@ class SimulationMCPAPI:
                 "manage approved simulation-only robot missions and telemetry",
             ],
             "cannot_do": [
-                "control, navigate, or dispatch a physical robot",
+                "control or dispatch a physical robot",
+                "navigate a physical robot",
                 "contact a customer, restaurant, or delivery provider",
                 "accept payment or place a real order",
                 "provide medical advice or certify food safety",
