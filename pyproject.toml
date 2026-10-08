@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tranceatables-food-delivery-system"
-version = "0.4.2"
-description = "Simulation-only order, robot mission management, and one-way Grist audit sync"
+version = "0.5.0"
+description = "Simulation-only order and robot missions with Grist audit sync and Sheety references"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 dependencies = []
