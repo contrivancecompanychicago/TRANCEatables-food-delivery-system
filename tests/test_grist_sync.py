@@ -1,6 +1,6 @@
 import sqlite3
 
-from tranceatables.grist_sync import GristClient, TableMapping, sync_table
+from tranceatables.grist_sync import GristClient, TABLE_MAPPINGS, TableMapping, _source_rows, sync_table
 
 
 class FakeGrist(GristClient):
@@ -56,3 +56,23 @@ def test_client_rejects_non_https_base_url():
         assert "https" in str(error)
     else:
         raise AssertionError("expected secure URL validation")
+
+
+def test_order_event_mapping_matches_grist_schema():
+    value = sqlite3.connect(":memory:")
+    value.row_factory = sqlite3.Row
+    value.execute("""CREATE TABLE order_events (
+        event_id INTEGER, order_id TEXT, from_status TEXT, to_status TEXT,
+        actor TEXT, reason TEXT, occurred_at TEXT, version INTEGER
+    )""")
+    value.execute(
+        "INSERT INTO order_events VALUES (1, 'O-1', NULL, 'draft', 'system', "
+        "'order_created', '2026-10-08T12:00:00+00:00', 0)"
+    )
+    mapping = next(item for item in TABLE_MAPPINGS if item.grist_table == "OrderEvents")
+    row = _source_rows(value, mapping)[0]
+    assert set(row) == {
+        "EventId", "OrderId", "PreviousStatus", "NewStatus",
+        "EventType", "Message", "OccurredAt",
+    }
+    assert row["EventType"] == "order_created"
