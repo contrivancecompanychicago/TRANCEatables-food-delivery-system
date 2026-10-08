@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-Stage 1.5 adds a local, simulation-only Model Context Protocol (MCP) server to the auditable Stage 1 order lifecycle.
+Stage 2 adds simulation-only robot registration, approved mission management, generated telemetry, and safety-event auditing to the existing order and farm-to-fork workflows.
 
 ## Stage 0 goal
 
@@ -119,6 +119,20 @@ TRANCEATABLES_DB_PATH=demo.sqlite3 mcp dev src/tranceatables/mcp_server.py
 
 Use opaque test identifiers only. Do not enter names, addresses, health information, payment data, credentials, or secrets.
 
+## Stage 2 robot mission simulation
+
+Stage 2 implements the validated Grist/Google Colab workflow as repository code. A ready simulated order may be paired with an eligible simulated robot, submitted for human approval, dispatched inside SQLite, advanced through pickup and handoff stages, and accompanied by generated telemetry and safety observations.
+
+```text
+planned -> awaiting_approval -> approved -> dispatched
+        -> navigating_to_pickup -> loading
+        -> navigating_to_dropoff -> awaiting_handoff -> completed
+```
+
+Simulated dispatch assigns the mission, Stage 1 order, and robot in one SQLite transaction and records the first stationary telemetry observation. It does not send a physical command. Grist is an optional dashboard and audit mirror, not a motor-control channel.
+
+See [`docs/STAGE_2_ROBOT_MISSIONS.md`](docs/STAGE_2_ROBOT_MISSIONS.md) for lifecycle rules, persistence, MCP capabilities, Grist mapping, acceptance criteria, and the physical-safety boundary.
+
 ## Farm-to-fork simulation
 
 The MCP server now includes an auditable food-lot chain:
@@ -154,7 +168,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 order state and persistence, the Stage 1.5 simulation-only MCP server, and simulation-only farm-to-fork traceability are implemented. Later stages may add mapping, dispatch, robot adapters, food-temperature telemetry, and human oversight. See `docs/STAGE_1.md` for the current scope and exit criteria.
+Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, and Stage 2 simulation-only robot mission management are implemented. Later stages may add a Grist synchronization adapter, mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 
