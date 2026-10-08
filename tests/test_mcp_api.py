@@ -60,3 +60,60 @@ def test_invalid_transition_is_rejected(tmp_path: Path) -> None:
 def test_identifiers_are_data_minimized(tmp_path: Path, unsafe: str) -> None:
     with pytest.raises(ValueError):
         api(tmp_path).create_order(order_id=unsafe, distance_km=1, payload_kg=1)
+
+
+def test_stage_2_mission_requires_approval_and_never_sends_physical_command(
+    tmp_path: Path,
+) -> None:
+    simulation = api(tmp_path)
+    simulation.create_order(order_id="SIM-200", distance_km=2, payload_kg=2)
+    for target in ("accepted", "prepared", "packaged", "ready"):
+        simulation.transition_order(order_id="SIM-200", target_status=target)
+
+    robot = simulation.register_simulated_robot(
+        robot_id="SIM-ROBOT-1",
+        name="TRANCE-BOT-1",
+        battery_percent=100,
+        current_zone="SIM-CHARGING",
+        payload_capacity_kg=10,
+    )
+    assert robot["status"] == "available"
+
+    mission = simulation.create_robot_mission(
+        mission_id="SIM-MISSION-1",
+        order_id="SIM-200",
+        robot_id="SIM-ROBOT-1",
+        pickup_zone="SIM-KITCHEN-1",
+        dropoff_zone="SIM-HANDOFF-1",
+        payload_kg=2,
+    )
+    mission = simulation.transition_robot_mission(
+        mission_id=mission["mission_id"],
+        target_status="awaiting_approval",
+    )
+    with pytest.raises(ValueError, match="human approval"):
+        simulation.transition_robot_mission(
+            mission_id=mission["mission_id"],
+            target_status="approved",
+        )
+
+    simulation.record_robot_mission_approval(
+        mission_id=mission["mission_id"],
+        operator_reference="SIM-OPERATOR-1",
+        decision="approved",
+    )
+    mission = simulation.transition_robot_mission(
+        mission_id=mission["mission_id"],
+        target_status="approved",
+    )
+    mission = simulation.transition_robot_mission(
+        mission_id=mission["mission_id"],
+        target_status="dispatched",
+    )
+    assert mission["status"] == "dispatched"
+    assert mission["physical_command_sent"] is False
+    assert simulation.get_order("SIM-200")["status"] == "assigned"
+    assert simulation.get_simulated_robot("SIM-ROBOT-1")["status"] == "assigned"
+    assert len(
+        simulation.get_robot_mission_telemetry("SIM-MISSION-1")["telemetry"]
+    ) == 1
