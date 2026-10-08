@@ -1,4 +1,4 @@
-"""TRANCEatables Stage 1 domain core."""
+"""TRANCEatables simulation domain core."""
 
 from .feasibility import FeasibilityDecision, evaluate_delivery
 from .models import DeliveryRequest, FoodHandling, RobotState
@@ -11,21 +11,59 @@ from .repository import (
     SQLiteOrderRepository,
 )
 from .service import OrderService
+from .robot_mission import (
+    ALLOWED_MISSION_TRANSITIONS,
+    InvalidMissionTransition,
+    MissionStatus,
+    RobotMission,
+    RobotStatus,
+    SimulatedRobot,
+    can_transition_mission,
+)
+from .robot_mission_repository import (
+    DuplicateMissionError,
+    DuplicateRobotError,
+    MissionEligibilityError,
+    MissionEvent,
+    MissionNotFoundError,
+    RobotNotFoundError,
+    SafetyEvent,
+    SQLiteRobotMissionRepository,
+    TelemetryRecord,
+)
+from .robot_mission_service import RobotMissionService
 
 __all__ = [
+    "ALLOWED_MISSION_TRANSITIONS",
     "ConcurrentUpdateError",
     "DeliveryRequest",
+    "DuplicateMissionError",
     "DuplicateOrderError",
+    "DuplicateRobotError",
     "FeasibilityDecision",
     "FoodHandling",
+    "InvalidMissionTransition",
     "InvalidTransition",
+    "MissionEligibilityError",
+    "MissionEvent",
+    "MissionNotFoundError",
+    "MissionStatus",
     "Order",
     "OrderEvent",
     "OrderNotFoundError",
     "OrderService",
     "OrderStatus",
+    "RobotMission",
+    "RobotMissionService",
+    "RobotNotFoundError",
     "RobotState",
+    "RobotStatus",
+    "SafetyEvent",
+    "SimulatedRobot",
+    "SQLiteRobotMissionRepository",
+    "TelemetryRecord",
     "SQLiteOrderRepository",
     "can_transition",
+    "can_transition_mission",
     "evaluate_delivery",
 ]
