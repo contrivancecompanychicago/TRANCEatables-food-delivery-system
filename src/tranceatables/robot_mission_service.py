@@ -115,6 +115,7 @@ class RobotMissionService:
             MissionStatus.NAVIGATING_TO_DROPOFF: RobotStatus.NAVIGATING,
             MissionStatus.AWAITING_HANDOFF: RobotStatus.AWAITING_HANDOFF,
             MissionStatus.COMPLETED: RobotStatus.AVAILABLE,
+            MissionStatus.CANCELLED: RobotStatus.AVAILABLE,
             MissionStatus.EMERGENCY_STOPPED: RobotStatus.EMERGENCY_STOPPED,
         }.get(target)
         if robot_status is not None:
