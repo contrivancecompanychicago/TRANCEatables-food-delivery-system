@@ -147,6 +147,17 @@ python -m tranceatables.grist_sync --database tranceatables.sqlite3 --apply
 
 Never commit the API key. Grist remains a dashboard and audit mirror and cannot dispatch or control a robot. See [`docs/STAGE_2_1_GRIST_SYNC.md`](docs/STAGE_2_1_GRIST_SYNC.md).
 
+## Stage 2.2 Sheety reference data
+
+Stage 2.2 adds an authenticated, read-only adapter for the cleaned **make DEEP Human Meals Services** Sheety project. It reads `restaurants`, `groceryItems`, and `mealReferences` for reference use only. It cannot write to Sheety, modify SQLite, create an order, approve a mission, dispatch a robot, or control hardware.
+
+```bash
+export SHEETY_BASE_URL="https://api.sheety.co/PROJECT_ID/PROJECT_NAME"
+export SHEETY_BEARER_TOKEN="your-secret"
+```
+
+SQLite remains authoritative, Grist remains the audit mirror, and Sheety remains a curated reference source. See [`docs/STAGE_2_2_SHEETY_REFERENCE.md`](docs/STAGE_2_2_SHEETY_REFERENCE.md) for security boundaries and Colab usage.
+
 ## Farm-to-fork simulation
 
 The MCP server now includes an auditable food-lot chain:
@@ -182,7 +193,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, and Stage 2.1 one-way Grist synchronization are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
+Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, Stage 2.1 one-way Grist synchronization, and the Stage 2.2 read-only Sheety reference adapter are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 
