@@ -1,4 +1,4 @@
-"""Stage 1.5 simulation-only MCP adapter.
+"""Stage 2 simulation-only MCP adapter.
 
 Run locally with:
     python -m tranceatables.mcp_server
@@ -222,6 +222,147 @@ def transition_simulated_farm_to_fork_trace(
         temperature_c=temperature_c,
         note=note,
         expected_version=expected_version,
+    )
+
+
+
+@mcp.resource("tranceatables://robots/{robot_id}")
+def simulated_robot_resource(robot_id: str) -> dict:
+    """Read one simulated robot snapshot."""
+    return api.get_simulated_robot(robot_id)
+
+
+@mcp.resource("tranceatables://robot-missions/{mission_id}")
+def robot_mission_resource(mission_id: str) -> dict:
+    """Read one simulation-only robot mission."""
+    return api.get_robot_mission(mission_id)
+
+
+@mcp.resource("tranceatables://robot-missions/{mission_id}/history")
+def robot_mission_history_resource(mission_id: str) -> dict:
+    """Read append-only mission transition history."""
+    return api.get_robot_mission_history(mission_id)
+
+
+@mcp.resource("tranceatables://robot-missions/{mission_id}/telemetry")
+def robot_mission_telemetry_resource(mission_id: str) -> dict:
+    """Read generated simulation telemetry; values are not physical sensor data."""
+    return api.get_robot_mission_telemetry(mission_id)
+
+
+@mcp.tool()
+def register_simulated_robot(
+    robot_id: str,
+    name: str,
+    battery_percent: float,
+    current_zone: str,
+    payload_capacity_kg: float,
+    operational: bool = True,
+) -> dict:
+    """Register a local simulated robot; this does not connect to hardware."""
+    return api.register_simulated_robot(
+        robot_id=robot_id,
+        name=name,
+        battery_percent=battery_percent,
+        current_zone=current_zone,
+        payload_capacity_kg=payload_capacity_kg,
+        operational=operational,
+    )
+
+
+@mcp.tool()
+def create_simulated_robot_mission(
+    mission_id: str,
+    order_id: str,
+    robot_id: str,
+    pickup_zone: str,
+    dropoff_zone: str,
+    payload_kg: float,
+    actor: str = "mcp-simulator",
+) -> dict:
+    """Plan a mission for a ready simulated order and eligible simulated robot."""
+    return api.create_robot_mission(
+        mission_id=mission_id,
+        order_id=order_id,
+        robot_id=robot_id,
+        pickup_zone=pickup_zone,
+        dropoff_zone=dropoff_zone,
+        payload_kg=payload_kg,
+        actor=actor,
+    )
+
+
+@mcp.tool()
+def record_simulated_mission_approval(
+    mission_id: str,
+    operator_reference: str,
+    decision: str,
+    note: str | None = None,
+) -> dict:
+    """Record an explicit human simulation approval or rejection."""
+    return api.record_robot_mission_approval(
+        mission_id=mission_id,
+        operator_reference=operator_reference,
+        decision=decision,
+        note=note,
+    )
+
+
+@mcp.tool()
+def transition_simulated_robot_mission(
+    mission_id: str,
+    target_status: str,
+    actor: str = "mcp-simulator",
+    message: str | None = None,
+    expected_version: int | None = None,
+) -> dict:
+    """Apply one validated simulation transition; no physical command is sent."""
+    return api.transition_robot_mission(
+        mission_id=mission_id,
+        target_status=target_status,
+        actor=actor,
+        message=message,
+        expected_version=expected_version,
+    )
+
+
+@mcp.tool()
+def record_simulated_robot_telemetry(
+    robot_id: str,
+    mission_id: str | None,
+    battery_percent: float,
+    current_zone: str,
+    position_x: float,
+    position_y: float,
+    speed_mps: float,
+) -> dict:
+    """Store generated simulation telemetry, never physical sensor telemetry."""
+    return api.record_robot_telemetry(
+        robot_id=robot_id,
+        mission_id=mission_id,
+        battery_percent=battery_percent,
+        current_zone=current_zone,
+        position_x=position_x,
+        position_y=position_y,
+        speed_mps=speed_mps,
+    )
+
+
+@mcp.tool()
+def record_simulated_robot_safety_event(
+    robot_id: str,
+    mission_id: str | None,
+    severity: str,
+    event_type: str,
+    message: str,
+) -> dict:
+    """Record a simulation safety observation; this cannot actuate an emergency stop."""
+    return api.record_robot_safety_event(
+        robot_id=robot_id,
+        mission_id=mission_id,
+        severity=severity,
+        event_type=event_type,
+        message=message,
     )
 
 
