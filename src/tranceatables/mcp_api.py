@@ -24,6 +24,19 @@ from .january_ai import JanuaryAIRestaurantClient, JanuaryAISettings
 from .order_state import ALLOWED_TRANSITIONS, Order, OrderStatus
 from .repository import OrderEvent, SQLiteOrderRepository
 from .service import OrderService
+from .robot_mission import (
+    ALLOWED_MISSION_TRANSITIONS,
+    MissionStatus,
+    RobotMission,
+    SimulatedRobot,
+)
+from .robot_mission_repository import (
+    MissionEvent,
+    SafetyEvent,
+    SQLiteRobotMissionRepository,
+    TelemetryRecord,
+)
+from .robot_mission_service import RobotMissionService
 
 
 SAFE_IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
@@ -104,18 +117,99 @@ def _trace_event_dict(event: FarmToForkEvent) -> dict[str, Any]:
     }
 
 
+def _robot_dict(robot: SimulatedRobot) -> dict[str, Any]:
+    return {
+        "robot_id": robot.robot_id,
+        "name": robot.name,
+        "status": robot.status.value,
+        "battery_percent": robot.battery_percent,
+        "current_zone": robot.current_zone,
+        "payload_capacity_kg": robot.payload_capacity_kg,
+        "operational": robot.operational,
+        "version": robot.version,
+        "created_at": robot.created_at,
+        "updated_at": robot.updated_at,
+        "simulation_only": True,
+    }
+
+
+def _mission_dict(mission: RobotMission) -> dict[str, Any]:
+    return {
+        "mission_id": mission.mission_id,
+        "order_id": mission.order_id,
+        "robot_id": mission.robot_id,
+        "status": mission.status.value,
+        "pickup_zone": mission.pickup_zone,
+        "dropoff_zone": mission.dropoff_zone,
+        "payload_kg": mission.payload_kg,
+        "version": mission.version,
+        "created_at": mission.created_at,
+        "updated_at": mission.updated_at,
+        "allowed_next_statuses": sorted(
+            status.value for status in ALLOWED_MISSION_TRANSITIONS[mission.status]
+        ),
+        "simulation_only": True,
+        "physical_command_sent": False,
+    }
+
+
+def _mission_event_dict(event: MissionEvent) -> dict[str, Any]:
+    return {
+        "event_id": event.event_id,
+        "mission_id": event.mission_id,
+        "from_status": event.from_status.value if event.from_status else None,
+        "to_status": event.to_status.value,
+        "actor": event.actor,
+        "message": event.message,
+        "occurred_at": event.occurred_at,
+        "version": event.version,
+    }
+
+
+def _telemetry_dict(record: TelemetryRecord) -> dict[str, Any]:
+    return {
+        "telemetry_id": record.telemetry_id,
+        "robot_id": record.robot_id,
+        "mission_id": record.mission_id,
+        "battery_percent": record.battery_percent,
+        "current_zone": record.current_zone,
+        "position_x": record.position_x,
+        "position_y": record.position_y,
+        "speed_mps": record.speed_mps,
+        "observed_at": record.observed_at,
+        "simulation_only": True,
+    }
+
+
+def _safety_event_dict(event: SafetyEvent) -> dict[str, Any]:
+    return {
+        "safety_event_id": event.safety_event_id,
+        "robot_id": event.robot_id,
+        "mission_id": event.mission_id,
+        "severity": event.severity,
+        "event_type": event.event_type,
+        "message": event.message,
+        "resolved": event.resolved,
+        "occurred_at": event.occurred_at,
+        "simulation_only": True,
+    }
+
+
 class SimulationMCPAPI:
     """Simulation facade over the Stage 0 evaluator and Stage 1 order service."""
 
     def __init__(self, database_path: str | Path) -> None:
         self.service = OrderService(SQLiteOrderRepository(database_path))
         self.farm_to_fork = SQLiteFarmToForkRepository(database_path)
+        self.robot_missions = RobotMissionService(
+            SQLiteRobotMissionRepository(database_path)
+        )
         self.january_ai = JanuaryAIRestaurantClient(JanuaryAISettings.from_environment())
 
     @staticmethod
     def about() -> dict[str, Any]:
         return {
-            "name": "TRANCEatables Stage 1.5 MCP",
+            "name": "TRANCEatables Stage 2 MCP",
             "mode": "simulation-only",
             "can_do": [
                 "evaluate a hypothetical delivery",
@@ -123,9 +217,10 @@ class SimulationMCPAPI:
                 "read simulated order state and history",
                 "advance or cancel a simulated order using Stage 1 rules",
                 "trace a simulated food lot from farm planning through delivery",
+                "manage approved simulation-only robot missions and telemetry",
             ],
             "cannot_do": [
-                "control or dispatch a physical robot",
+                "control, navigate, or dispatch a physical robot",
                 "contact a customer, restaurant, or delivery provider",
                 "accept payment or place a real order",
                 "provide medical advice or certify food safety",
@@ -326,3 +421,174 @@ class SimulationMCPAPI:
             expected_version=expected_version,
         )
         return _trace_dict(record)
+
+
+    def register_simulated_robot(
+        self,
+        *,
+        robot_id: str,
+        name: str,
+        battery_percent: float,
+        current_zone: str,
+        payload_capacity_kg: float,
+        operational: bool = True,
+    ) -> dict[str, Any]:
+        robot = self.robot_missions.register_robot(
+            robot_id=_safe_identifier(robot_id, "robot_id"),
+            name=_safe_identifier(name, "name"),
+            battery_percent=battery_percent,
+            current_zone=_safe_identifier(current_zone, "current_zone"),
+            payload_capacity_kg=payload_capacity_kg,
+            operational=operational,
+        )
+        return _robot_dict(robot)
+
+    def get_simulated_robot(self, robot_id: str) -> dict[str, Any]:
+        return _robot_dict(
+            self.robot_missions.get_robot(_safe_identifier(robot_id, "robot_id"))
+        )
+
+    def create_robot_mission(
+        self,
+        *,
+        mission_id: str,
+        order_id: str,
+        robot_id: str,
+        pickup_zone: str,
+        dropoff_zone: str,
+        payload_kg: float,
+        actor: str = "mcp-simulator",
+    ) -> dict[str, Any]:
+        mission = self.robot_missions.create_mission(
+            mission_id=_safe_identifier(mission_id, "mission_id"),
+            order_id=_safe_identifier(order_id, "order_id"),
+            robot_id=_safe_identifier(robot_id, "robot_id"),
+            pickup_zone=_safe_identifier(pickup_zone, "pickup_zone"),
+            dropoff_zone=_safe_identifier(dropoff_zone, "dropoff_zone"),
+            payload_kg=payload_kg,
+            actor=_safe_identifier(actor, "actor"),
+        )
+        return _mission_dict(mission)
+
+    def get_robot_mission(self, mission_id: str) -> dict[str, Any]:
+        return _mission_dict(
+            self.robot_missions.get_mission(
+                _safe_identifier(mission_id, "mission_id")
+            )
+        )
+
+    def get_robot_mission_history(self, mission_id: str) -> dict[str, Any]:
+        safe_id = _safe_identifier(mission_id, "mission_id")
+        return {
+            "mission_id": safe_id,
+            "events": [
+                _mission_event_dict(event)
+                for event in self.robot_missions.get_history(safe_id)
+            ],
+            "simulation_only": True,
+        }
+
+    def get_robot_mission_telemetry(self, mission_id: str) -> dict[str, Any]:
+        safe_id = _safe_identifier(mission_id, "mission_id")
+        return {
+            "mission_id": safe_id,
+            "telemetry": [
+                _telemetry_dict(record)
+                for record in self.robot_missions.get_telemetry(safe_id)
+            ],
+            "simulation_only": True,
+        }
+
+    def record_robot_mission_approval(
+        self,
+        *,
+        mission_id: str,
+        operator_reference: str,
+        decision: str,
+        note: str | None = None,
+    ) -> dict[str, Any]:
+        if note is not None and len(note) > 200:
+            raise ValueError("note cannot exceed 200 characters")
+        safe_id = _safe_identifier(mission_id, "mission_id")
+        self.robot_missions.record_approval(
+            safe_id,
+            operator_reference=_safe_identifier(
+                operator_reference, "operator_reference"
+            ),
+            decision=decision,
+            note=note,
+        )
+        return {
+            "mission_id": safe_id,
+            "decision": decision,
+            "recorded": True,
+            "simulation_only": True,
+        }
+
+    def transition_robot_mission(
+        self,
+        *,
+        mission_id: str,
+        target_status: str,
+        actor: str = "mcp-simulator",
+        message: str | None = None,
+        expected_version: int | None = None,
+    ) -> dict[str, Any]:
+        if message is not None and len(message) > 200:
+            raise ValueError("message cannot exceed 200 characters")
+        mission = self.robot_missions.transition(
+            _safe_identifier(mission_id, "mission_id"),
+            MissionStatus(target_status),
+            actor=_safe_identifier(actor, "actor"),
+            message=message,
+            expected_version=expected_version,
+        )
+        result = _mission_dict(mission)
+        result["physical_command_sent"] = False
+        return result
+
+    def record_robot_telemetry(
+        self,
+        *,
+        robot_id: str,
+        mission_id: str | None,
+        battery_percent: float,
+        current_zone: str,
+        position_x: float,
+        position_y: float,
+        speed_mps: float,
+    ) -> dict[str, Any]:
+        record = self.robot_missions.record_telemetry(
+            robot_id=_safe_identifier(robot_id, "robot_id"),
+            mission_id=(
+                _safe_identifier(mission_id, "mission_id") if mission_id else None
+            ),
+            battery_percent=battery_percent,
+            current_zone=_safe_identifier(current_zone, "current_zone"),
+            position_x=position_x,
+            position_y=position_y,
+            speed_mps=speed_mps,
+        )
+        return _telemetry_dict(record)
+
+    def record_robot_safety_event(
+        self,
+        *,
+        robot_id: str,
+        mission_id: str | None,
+        severity: str,
+        event_type: str,
+        message: str,
+    ) -> dict[str, Any]:
+        if len(message) > 200:
+            raise ValueError("message cannot exceed 200 characters")
+        event = self.robot_missions.record_safety_event(
+            robot_id=_safe_identifier(robot_id, "robot_id"),
+            mission_id=(
+                _safe_identifier(mission_id, "mission_id") if mission_id else None
+            ),
+            severity=_safe_identifier(severity, "severity"),
+            event_type=_safe_identifier(event_type, "event_type"),
+            message=message,
+        )
+        return _safety_event_dict(event)
