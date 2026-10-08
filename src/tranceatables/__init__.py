@@ -32,6 +32,11 @@ from .robot_mission_repository import (
     TelemetryRecord,
 )
 from .robot_mission_service import RobotMissionService
+from .sheety_reference import (
+    SheetyReferenceClient,
+    SheetyReferenceError,
+    SheetyReferenceSnapshot,
+)
 
 __all__ = [
     "ALLOWED_MISSION_TRANSITIONS",
@@ -59,6 +64,9 @@ __all__ = [
     "RobotState",
     "RobotStatus",
     "SafetyEvent",
+    "SheetyReferenceClient",
+    "SheetyReferenceError",
+    "SheetyReferenceSnapshot",
     "SimulatedRobot",
     "SQLiteRobotMissionRepository",
     "TelemetryRecord",
