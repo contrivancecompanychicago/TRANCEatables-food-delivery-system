@@ -31,6 +31,12 @@ class OrderService:
             raise ValueError("order_id cannot be blank")
         if request.distance_km < 0 or request.payload_kg < 0:
             raise ValueError("distance and payload cannot be negative")
+        has_restaurant = bool(request.restaurant_id and request.restaurant_id.strip())
+        has_pickup_zone = bool(request.pickup_zone and request.pickup_zone.strip())
+        if has_restaurant != has_pickup_zone:
+            raise ValueError(
+                "restaurant_id and pickup_zone must be supplied together"
+            )
         timestamp = self._timestamp()
         order = Order(request, OrderStatus.DRAFT, 0, timestamp, timestamp)
         return self.repository.create(order, actor=actor)
