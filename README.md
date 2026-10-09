@@ -164,6 +164,12 @@ Stage 2.3 validates one active Sheety restaurant and stores its stable `restaura
 
 See [`docs/STAGE_2_3_RESTAURANT_ORDERS.md`](docs/STAGE_2_3_RESTAURANT_ORDERS.md) for the migration and idempotent Google Colab workflow.
 
+## Stage 2.4 abstract nutrient solver
+
+Stage 2.4 solves the three MealReferences using exact rational arithmetic. The validated solution is `Food1=50/11`, `Food2=50/33`, and `Food3=40/33`, with zero residuals. Because the source targets lack units and GroceryItems lacks a compatible Magnesium field, all values remain `model_unit` with status `solved_unmapped`.
+
+The solver does not assign grocery products, provide dietary advice, advance an order, or dispatch a robot. See [`docs/STAGE_2_4_NUTRIENT_SOLVER.md`](docs/STAGE_2_4_NUTRIENT_SOLVER.md).
+
 ## Farm-to-fork simulation
 
 The MCP server now includes an auditable food-lot chain:
@@ -199,7 +205,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, Stage 2.1 one-way Grist synchronization, the Stage 2.2 read-only Sheety reference adapter, and Stage 2.3 restaurant-linked draft orders are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
+Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, Stage 2.1 one-way Grist synchronization, the Stage 2.2 read-only Sheety reference adapter, Stage 2.3 restaurant-linked draft orders, and the Stage 2.4 abstract nutrient solver are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 
