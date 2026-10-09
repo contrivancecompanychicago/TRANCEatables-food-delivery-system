@@ -56,8 +56,9 @@ def _boolean(value: Any) -> bool:
 
 TABLE_MAPPINGS: tuple[TableMapping, ...] = (
     TableMapping(
-        """SELECT order_id AS OrderId, status AS Status, created_at AS CreatedAt,
-        updated_at AS UpdatedAt, 1 AS SimulationOnly FROM orders ORDER BY order_id""",
+        """SELECT order_id AS OrderId, restaurant_id AS RestaurantId,
+        status AS Status, created_at AS CreatedAt, updated_at AS UpdatedAt,
+        1 AS SimulationOnly FROM orders ORDER BY order_id""",
         "Orders", "OrderId",
         {"CreatedAt": _epoch, "UpdatedAt": _epoch, "SimulationOnly": _boolean},
     ),
