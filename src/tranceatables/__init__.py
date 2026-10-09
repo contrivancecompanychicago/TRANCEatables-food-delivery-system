@@ -2,6 +2,15 @@
 
 from .feasibility import FeasibilityDecision, evaluate_delivery
 from .models import DeliveryRequest, FoodHandling, RobotState
+from .meal_plan import (
+    DuplicateMealPlanError,
+    MealPlanEligibilityError,
+    MealPlanEvent,
+    MealPlanNotFoundError,
+    MealPlanService,
+    SimulatedMealPlan,
+    SQLiteMealPlanRepository,
+)
 from .nutrient_solver import (
     MealConstraintSolution,
     NutrientSolverError,
@@ -48,6 +57,7 @@ __all__ = [
     "ALLOWED_MISSION_TRANSITIONS",
     "ConcurrentUpdateError",
     "DeliveryRequest",
+    "DuplicateMealPlanError",
     "DuplicateMissionError",
     "DuplicateOrderError",
     "DuplicateRobotError",
@@ -60,6 +70,10 @@ __all__ = [
     "MissionNotFoundError",
     "MissionStatus",
     "MealConstraintSolution",
+    "MealPlanEligibilityError",
+    "MealPlanEvent",
+    "MealPlanNotFoundError",
+    "MealPlanService",
     "NutrientSolverError",
     "Order",
     "OrderEvent",
@@ -76,7 +90,9 @@ __all__ = [
     "SheetyReferenceClient",
     "SheetyReferenceError",
     "SheetyReferenceSnapshot",
+    "SimulatedMealPlan",
     "SimulatedRobot",
+    "SQLiteMealPlanRepository",
     "SQLiteRobotMissionRepository",
     "TelemetryRecord",
     "SQLiteOrderRepository",
