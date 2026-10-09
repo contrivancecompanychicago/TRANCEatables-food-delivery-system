@@ -33,6 +33,7 @@ from .robot_mission_repository import (
 )
 from .robot_mission_service import RobotMissionService
 from .sheety_reference import (
+    RestaurantReference,
     SheetyReferenceClient,
     SheetyReferenceError,
     SheetyReferenceSnapshot,
@@ -63,6 +64,7 @@ __all__ = [
     "RobotNotFoundError",
     "RobotState",
     "RobotStatus",
+    "RestaurantReference",
     "SafetyEvent",
     "SheetyReferenceClient",
     "SheetyReferenceError",
