@@ -176,6 +176,12 @@ Stage 2.5 persists the Stage 2.4 `solved_unmapped` result in SQLite, links one p
 
 The plan does not advance the order, provide dietary advice, create a mission, or dispatch a robot. Grist mirroring is deferred until dedicated tables are created. See [`docs/STAGE_2_5_MEAL_PLAN_PERSISTENCE.md`](docs/STAGE_2_5_MEAL_PLAN_PERSISTENCE.md).
 
+## Stage 2.6 Grist meal-plan mirror
+
+Stage 2.6 extends the dry-run-first SQLite-to-Grist audit mirror with `SimulatedMealPlans` and `MealPlanEvents`. Stable-key upserts, complete schema preflight, and the explicit `--apply` requirement remain in effect.
+
+SQLite stays authoritative, and the sync cannot assign products, advance orders, create missions, or dispatch robots. See [`docs/STAGE_2_6_GRIST_MEAL_PLAN_SYNC.md`](docs/STAGE_2_6_GRIST_MEAL_PLAN_SYNC.md).
+
 ## Farm-to-fork simulation
 
 The MCP server now includes an auditable food-lot chain:
@@ -211,7 +217,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, Stage 2.1 one-way Grist synchronization, the Stage 2.2 read-only Sheety reference adapter, Stage 2.3 restaurant-linked draft orders, the Stage 2.4 abstract nutrient solver, and Stage 2.5 simulated meal-plan persistence are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
+Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, Stage 2.1 one-way Grist synchronization, the Stage 2.2 read-only Sheety reference adapter, Stage 2.3 restaurant-linked draft orders, the Stage 2.4 abstract nutrient solver, Stage 2.5 simulated meal-plan persistence, and the Stage 2.6 Grist meal-plan mirror are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 
