@@ -72,6 +72,33 @@ TABLE_MAPPINGS: tuple[TableMapping, ...] = (
         "OrderEvents", "EventId", {"OccurredAt": _epoch},
     ),
     TableMapping(
+        """SELECT meal_plan_id AS MealPlanId, order_id AS OrderId,
+        nutrients_json AS Nutrients,
+        json_extract(exact_quantities_json, '$[0]') AS Food1Exact,
+        json_extract(exact_quantities_json, '$[1]') AS Food2Exact,
+        json_extract(exact_quantities_json, '$[2]') AS Food3Exact,
+        json_extract(quantities_json, '$[0]') AS Food1Quantity,
+        json_extract(quantities_json, '$[1]') AS Food2Quantity,
+        json_extract(quantities_json, '$[2]') AS Food3Quantity,
+        calculated_targets_json AS CalculatedTargets,
+        residuals_json AS Residuals, target_unit AS TargetUnit,
+        quantity_unit AS QuantityUnit, status AS Status,
+        food1_item_id AS Food1ItemId, food2_item_id AS Food2ItemId,
+        food3_item_id AS Food3ItemId, created_at AS CreatedAt,
+        updated_at AS UpdatedAt, simulation_only AS SimulationOnly
+        FROM simulated_meal_plans ORDER BY meal_plan_id""",
+        "SimulatedMealPlans", "MealPlanId",
+        {"CreatedAt": _epoch, "UpdatedAt": _epoch,
+         "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT 'MEAL-PLAN-EVENT-' || event_id AS EventId,
+        meal_plan_id AS MealPlanId, event_type AS EventType,
+        actor AS Actor, message AS Message, occurred_at AS OccurredAt
+        FROM meal_plan_events ORDER BY event_id""",
+        "MealPlanEvents", "EventId", {"OccurredAt": _epoch},
+    ),
+    TableMapping(
         """SELECT robot_id AS RobotId, name AS RobotName, status AS Status,
         battery_percent AS BatteryPercent, current_zone AS CurrentZone,
         payload_capacity_kg AS PayloadCapacityKg, operational AS Operational,
