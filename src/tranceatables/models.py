@@ -18,6 +18,8 @@ class DeliveryRequest:
     handling: FoodHandling = FoodHandling.AMBIENT
     packaging_verified: bool = False
     customer_handoff_required: bool = True
+    restaurant_id: str | None = None
+    pickup_zone: str | None = None
 
 
 @dataclass(frozen=True)
