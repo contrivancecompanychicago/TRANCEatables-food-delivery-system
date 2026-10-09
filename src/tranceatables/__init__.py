@@ -2,6 +2,11 @@
 
 from .feasibility import FeasibilityDecision, evaluate_delivery
 from .models import DeliveryRequest, FoodHandling, RobotState
+from .nutrient_solver import (
+    MealConstraintSolution,
+    NutrientSolverError,
+    solve_meal_references,
+)
 from .order_state import InvalidTransition, Order, OrderStatus, can_transition
 from .repository import (
     ConcurrentUpdateError,
@@ -54,6 +59,8 @@ __all__ = [
     "MissionEvent",
     "MissionNotFoundError",
     "MissionStatus",
+    "MealConstraintSolution",
+    "NutrientSolverError",
     "Order",
     "OrderEvent",
     "OrderNotFoundError",
@@ -76,4 +83,5 @@ __all__ = [
     "can_transition",
     "can_transition_mission",
     "evaluate_delivery",
+    "solve_meal_references",
 ]
