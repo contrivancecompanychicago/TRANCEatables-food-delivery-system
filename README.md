@@ -158,6 +158,12 @@ export SHEETY_BEARER_TOKEN="your-secret"
 
 SQLite remains authoritative, Grist remains the audit mirror, and Sheety remains a curated reference source. See [`docs/STAGE_2_2_SHEETY_REFERENCE.md`](docs/STAGE_2_2_SHEETY_REFERENCE.md) for security boundaries and Colab usage.
 
+## Stage 2.3 restaurant-linked orders
+
+Stage 2.3 validates one active Sheety restaurant and stores its stable `restaurant_id` and simulated `pickup_zone` on a draft SQLite order. Opening an older database adds the two nullable columns without deleting existing orders. The Sheety row number is never used as the business identifier, and this workflow does not create or dispatch a robot mission.
+
+See [`docs/STAGE_2_3_RESTAURANT_ORDERS.md`](docs/STAGE_2_3_RESTAURANT_ORDERS.md) for the migration and idempotent Google Colab workflow.
+
 ## Farm-to-fork simulation
 
 The MCP server now includes an auditable food-lot chain:
@@ -193,7 +199,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, Stage 2.1 one-way Grist synchronization, and the Stage 2.2 read-only Sheety reference adapter are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
+Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, Stage 2.1 one-way Grist synchronization, the Stage 2.2 read-only Sheety reference adapter, and Stage 2.3 restaurant-linked draft orders are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 
