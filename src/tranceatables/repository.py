@@ -56,6 +56,8 @@ class SQLiteOrderRepository:
                     handling TEXT NOT NULL,
                     packaging_verified INTEGER NOT NULL,
                     customer_handoff_required INTEGER NOT NULL,
+                    restaurant_id TEXT,
+                    pickup_zone TEXT,
                     status TEXT NOT NULL,
                     version INTEGER NOT NULL,
                     created_at TEXT NOT NULL,
@@ -74,12 +76,25 @@ class SQLiteOrderRepository:
                 );
                 """
             )
+            columns = {
+                row["name"]
+                for row in connection.execute("PRAGMA table_info(orders)").fetchall()
+            }
+            if "restaurant_id" not in columns:
+                connection.execute("ALTER TABLE orders ADD COLUMN restaurant_id TEXT")
+            if "pickup_zone" not in columns:
+                connection.execute("ALTER TABLE orders ADD COLUMN pickup_zone TEXT")
 
     def create(self, order: Order, *, actor: str) -> Order:
         try:
             with self._connect() as connection:
                 connection.execute(
-                    """INSERT INTO orders VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    """INSERT INTO orders (
+                    order_id, distance_km, payload_kg, handling,
+                    packaging_verified, customer_handoff_required,
+                    restaurant_id, pickup_zone, status, version,
+                    created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
                         order.order_id,
                         order.request.distance_km,
@@ -87,6 +102,8 @@ class SQLiteOrderRepository:
                         order.request.handling.value,
                         int(order.request.packaging_verified),
                         int(order.request.customer_handoff_required),
+                        order.request.restaurant_id,
+                        order.request.pickup_zone,
                         order.status.value,
                         order.version,
                         order.created_at,
@@ -183,6 +200,8 @@ class SQLiteOrderRepository:
             handling=FoodHandling(row["handling"]),
             packaging_verified=bool(row["packaging_verified"]),
             customer_handoff_required=bool(row["customer_handoff_required"]),
+            restaurant_id=row["restaurant_id"],
+            pickup_zone=row["pickup_zone"],
         )
         return Order(
             request=request,
