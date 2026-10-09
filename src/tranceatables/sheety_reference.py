@@ -1,8 +1,8 @@
-"""Read-only Sheety reference-data adapter for Stage 2.2.
+"""Read-only Sheety reference-data adapter for Stages 2.2 and 2.3.
 
-This module can read curated restaurant, grocery-item, and meal-reference rows.
-It deliberately exposes no write methods and has no dependency on order or robot
-mission services.
+This module reads curated restaurant, grocery-item, and meal-reference rows.
+It deliberately exposes no write methods and has no dependency on robot mission
+services.
 """
 
 from __future__ import annotations
@@ -24,6 +24,15 @@ Transport = Callable[[Request, float], tuple[int, bytes]]
 
 
 @dataclass(frozen=True)
+class RestaurantReference:
+    restaurant_id: str
+    restaurant_name: str
+    pickup_zone: str
+    source: str
+    sheety_row_id: int | None = None
+
+
+@dataclass(frozen=True)
 class SheetyReferenceSnapshot:
     restaurants: tuple[Mapping[str, Any], ...]
     grocery_items: tuple[Mapping[str, Any], ...]
@@ -35,8 +44,14 @@ def _default_transport(request: Request, timeout: float) -> tuple[int, bytes]:
         return response.status, response.read()
 
 
+def _is_true(value: Any) -> bool:
+    return value is True or (
+        isinstance(value, str) and value.strip().lower() == "true"
+    )
+
+
 class SheetyReferenceClient:
-    """Minimal GET-only client for the curated Stage 2.2 Sheety project."""
+    """Minimal GET-only client for the curated Sheety project."""
 
     ENDPOINTS = {
         "restaurants": "restaurants",
@@ -127,6 +142,39 @@ class SheetyReferenceClient:
 
     def get_restaurants(self) -> tuple[Mapping[str, Any], ...]:
         return self._get_collection("restaurants")
+
+    def get_active_restaurant(self, restaurant_id: str) -> RestaurantReference:
+        requested = restaurant_id.strip()
+        if not requested:
+            raise SheetyReferenceError("restaurant_id cannot be blank")
+        matches = [
+            record
+            for record in self.get_restaurants()
+            if str(record.get("restaurantId", "")).strip() == requested
+        ]
+        if len(matches) != 1:
+            raise SheetyReferenceError(
+                f"Expected exactly one restaurant named {requested}; found {len(matches)}"
+            )
+        record = matches[0]
+        if not _is_true(record.get("active")):
+            raise SheetyReferenceError(f"Restaurant is not active: {requested}")
+
+        name = str(record.get("restaurantName", "")).strip()
+        pickup_zone = str(record.get("pickupZone", "")).strip()
+        source = str(record.get("source", "")).strip()
+        if not name or not pickup_zone or not source:
+            raise SheetyReferenceError(
+                "Restaurant requires restaurantName, pickupZone, and source"
+            )
+        row_id = record.get("id")
+        return RestaurantReference(
+            restaurant_id=requested,
+            restaurant_name=name,
+            pickup_zone=pickup_zone,
+            source=source,
+            sheety_row_id=row_id if isinstance(row_id, int) else None,
+        )
 
     def get_grocery_items(self) -> tuple[Mapping[str, Any], ...]:
         return self._get_collection("grocery_items")
