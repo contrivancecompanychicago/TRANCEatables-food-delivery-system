@@ -48,11 +48,13 @@ from .robot_mission_repository import (
 from .robot_mission_service import RobotMissionService
 from .serving_candidate import (
     DuplicateServingCandidateError,
+    DuplicateServingCandidateReviewError,
     FoodServingCandidate,
     ServingCandidateEligibilityError,
     ServingCandidateEvent,
     ServingCandidateInput,
     ServingCandidateNotFoundError,
+    ServingCandidateReview,
     ServingCandidateService,
     SQLiteServingCandidateRepository,
 )
@@ -72,6 +74,7 @@ __all__ = [
     "DuplicateOrderError",
     "DuplicateRobotError",
     "DuplicateServingCandidateError",
+    "DuplicateServingCandidateReviewError",
     "FeasibilityDecision",
     "FoodHandling",
     "FoodServingCandidate",
@@ -103,6 +106,7 @@ __all__ = [
     "ServingCandidateEvent",
     "ServingCandidateInput",
     "ServingCandidateNotFoundError",
+    "ServingCandidateReview",
     "ServingCandidateService",
     "SheetyReferenceClient",
     "SheetyReferenceError",
