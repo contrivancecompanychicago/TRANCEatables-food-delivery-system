@@ -19,11 +19,11 @@ from tranceatables.serving_revision import (
 
 
 REFERENCES = [
-    {"nutrient": "Vitamin C", "food1Amount": 10, "food2Amount": 20,
+    {"mealReferenceId": "MEAL-NUTRIENT-001", "nutrient": "Vitamin C", "food1Amount": 10, "food2Amount": 20,
      "food3Amount": 20, "targetAmount": 100},
-    {"nutrient": "Calcium", "food1Amount": 50, "food2Amount": 40,
+    {"mealReferenceId": "MEAL-NUTRIENT-002", "nutrient": "Calcium", "food1Amount": 50, "food2Amount": 40,
      "food3Amount": 10, "targetAmount": 300},
-    {"nutrient": "Magnesium", "food1Amount": 30, "food2Amount": 10,
+    {"mealReferenceId": "MEAL-NUTRIENT-003", "nutrient": "Magnesium", "food1Amount": 30, "food2Amount": 10,
      "food3Amount": 40, "targetAmount": 200},
 ]
 
