@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Stage 2.8 adds immutable human decisions to the serving-candidate review queue without assigning products, advancing orders, or dispatching robots.
+TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Stage 2.9 adds immutable, provenance-bearing corrections for reviewed serving candidates without assigning products, advancing orders, or dispatching robots.
 
 ## Stage 0 goal
 
@@ -194,6 +194,12 @@ Stage 2.8 records one immutable human decision per serving candidate: `approved`
 
 Approval confirms only that the serving structure was reviewed. It does not validate nutrition claims, map solver units, assign products, advance orders, create missions, or dispatch robots. See [`docs/STAGE_2_8_CANDIDATE_REVIEW.md`](docs/STAGE_2_8_CANDIDATE_REVIEW.md).
 
+## Stage 2.9 immutable serving correction
+
+Stage 2.9 creates a separate correction record for a `mass_missing` candidate only after a human marks the original `correction_required`. The original candidate and review remain unchanged. The corrected record carries its source provenance and receives a separate human decision.
+
+The validated Milk revision records 426 g from the corrected Sheety row while retaining the original 414 ml measure. Approval still does not map the meal plan, advance the order, or dispatch a robot. See [`docs/STAGE_2_9_SERVING_REVISION.md`](docs/STAGE_2_9_SERVING_REVISION.md).
+
 ## Farm-to-fork simulation
 
 The MCP server now includes an auditable food-lot chain:
@@ -229,7 +235,7 @@ See [`docs/VENDOR_CULAP_DATA_FARM.md`](docs/VENDOR_CULAP_DATA_FARM.md) for the c
 
 ## Roadmap
 
-Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, Stage 2.1 one-way Grist synchronization, the Stage 2.2 read-only Sheety reference adapter, Stage 2.3 restaurant-linked draft orders, the Stage 2.4 abstract nutrient solver, Stage 2.5 simulated meal-plan persistence, the Stage 2.6 Grist meal-plan mirror, Stage 2.7 serving-candidate persistence, and Stage 2.8 human candidate review are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
+Stage 1 order persistence, the Stage 1.5 MCP server, farm-to-fork traceability, Stage 2 simulation-only robot mission management, Stage 2.1 one-way Grist synchronization, the Stage 2.2 read-only Sheety reference adapter, Stage 2.3 restaurant-linked draft orders, the Stage 2.4 abstract nutrient solver, Stage 2.5 simulated meal-plan persistence, the Stage 2.6 Grist meal-plan mirror, Stage 2.7 serving-candidate persistence, Stage 2.8 human candidate review, and Stage 2.9 immutable serving corrections are implemented. Later stages may add mapping, ROS 2/Nav2 simulation, hardware adapters, authenticated command transport, onboard safety systems, and supervised physical testing. See `docs/STAGE_1.md` for the current scope and exit criteria.
 
 ## License
 

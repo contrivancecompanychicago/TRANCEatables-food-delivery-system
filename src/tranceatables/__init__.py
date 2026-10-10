@@ -58,6 +58,14 @@ from .serving_candidate import (
     ServingCandidateService,
     SQLiteServingCandidateRepository,
 )
+from .serving_revision import (
+    DuplicateServingRevisionError,
+    ServingCandidateRevision,
+    ServingRevisionNotFoundError,
+    ServingRevisionReview,
+    ServingRevisionService,
+    SQLiteServingRevisionRepository,
+)
 from .sheety_reference import (
     RestaurantReference,
     SheetyReferenceClient,
@@ -75,6 +83,7 @@ __all__ = [
     "DuplicateRobotError",
     "DuplicateServingCandidateError",
     "DuplicateServingCandidateReviewError",
+    "DuplicateServingRevisionError",
     "FeasibilityDecision",
     "FoodHandling",
     "FoodServingCandidate",
@@ -107,7 +116,11 @@ __all__ = [
     "ServingCandidateInput",
     "ServingCandidateNotFoundError",
     "ServingCandidateReview",
+    "ServingCandidateRevision",
     "ServingCandidateService",
+    "ServingRevisionNotFoundError",
+    "ServingRevisionReview",
+    "ServingRevisionService",
     "SheetyReferenceClient",
     "SheetyReferenceError",
     "SheetyReferenceSnapshot",
@@ -117,6 +130,7 @@ __all__ = [
     "SQLiteOrderRepository",
     "SQLiteRobotMissionRepository",
     "SQLiteServingCandidateRepository",
+    "SQLiteServingRevisionRepository",
     "TelemetryRecord",
     "can_transition",
     "can_transition_mission",
