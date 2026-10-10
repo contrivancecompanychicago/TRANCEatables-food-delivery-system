@@ -7,6 +7,7 @@ from tranceatables.meal_plan import MealPlanService, SQLiteMealPlanRepository
 from tranceatables.nutrient_solver import solve_meal_references
 from tranceatables.serving_candidate import (
     DuplicateServingCandidateError,
+    DuplicateServingCandidateReviewError,
     ServingCandidateEligibilityError,
     ServingCandidateInput,
     ServingCandidateService,
@@ -187,3 +188,89 @@ def test_requires_existing_meal_plan_table(tmp_path):
         match="simulated_meal_plans",
     ):
         SQLiteServingCandidateRepository(tmp_path / "orders-only.sqlite3")
+
+
+def test_approves_structurally_valid_candidate_with_audit_event(tmp_path):
+    service, repository, plans, orders = setup_service(tmp_path)
+    service.create_candidate(orange_juice(), actor="colab-human-review")
+
+    review = service.review_candidate(
+        review_id="SERVING-REVIEW-0001",
+        candidate_id="SERVING-CANDIDATE-0001",
+        decision="approved",
+        reviewer="human-operator",
+        notes="Serving description and gram weight checked.",
+    )
+
+    assert review.decision == "approved"
+    assert review.simulation_only is True
+    assert repository.get_review(review.candidate_id) == review
+    assert [event.event_type for event in repository.events(review.candidate_id)] == [
+        "candidate_created",
+        "candidate_reviewed",
+    ]
+    assert plans.get("SIM-MEAL-PLAN-0001").food_item_ids == (None, None, None)
+    assert plans.get("SIM-MEAL-PLAN-0001").status == "solved_unmapped"
+    assert orders.get("SIM-ORDER-0002").status.value == "draft"
+
+
+def test_mass_missing_candidate_requires_correction_not_approval(tmp_path):
+    service, repository, _, _ = setup_service(tmp_path)
+    milk = orange_juice(
+        candidate_id="SERVING-CANDIDATE-0002",
+        food_slot=2,
+        source_item_id="54f01bf33e1cba632126a72e",
+        source_upc="74336863950",
+        brand_name="Hunter Farms",
+        item_name="Milk, 2% Reduced Fat",
+        serving_quantity=1.74,
+        serving_unit_label="cups",
+        serving_weight_grams=None,
+        metric_quantity=414.0,
+        metric_unit="ml",
+    )
+    service.create_candidate(milk, actor="colab-human-review")
+
+    with pytest.raises(ServingCandidateEligibilityError, match="structurally_valid"):
+        service.review_candidate(
+            review_id="SERVING-REVIEW-0002",
+            candidate_id=milk.candidate_id,
+            decision="approved",
+            reviewer="human-operator",
+            notes="Approval attempted without a gram weight.",
+        )
+
+    review = service.review_candidate(
+        review_id="SERVING-REVIEW-0002",
+        candidate_id=milk.candidate_id,
+        decision="correction_required",
+        reviewer="human-operator",
+        notes="Verified gram weight is required.",
+    )
+    assert review.decision == "correction_required"
+    assert repository.get_review(milk.candidate_id) == review
+
+
+def test_rejects_duplicate_review_and_invalid_decision(tmp_path):
+    service, _, _, _ = setup_service(tmp_path)
+    service.create_candidate(orange_juice(), actor="colab-human-review")
+    values = {
+        "review_id": "SERVING-REVIEW-0001",
+        "candidate_id": "SERVING-CANDIDATE-0001",
+        "decision": "approved",
+        "reviewer": "human-operator",
+        "notes": "Reviewed.",
+    }
+    service.review_candidate(**values)
+
+    with pytest.raises(DuplicateServingCandidateReviewError):
+        service.review_candidate(**values)
+
+    with pytest.raises(ValueError, match="decision"):
+        service.review_candidate(
+            **{
+                **values,
+                "review_id": "SERVING-REVIEW-0002",
+                "decision": "maybe",
+            }
+        )
