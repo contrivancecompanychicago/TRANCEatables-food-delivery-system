@@ -1,4 +1,4 @@
-"""Stage 2.7 persistence for simulation-only serving candidates.
+"""Stage 2.7–2.8 persistence for simulation-only serving candidates.
 
 Candidates are review records only. They never assign a grocery item to a meal
 plan, advance an order, create a robot mission, or dispatch hardware.
@@ -25,6 +25,13 @@ class ServingCandidateNotFoundError(LookupError):
 
 class ServingCandidateEligibilityError(ValueError):
     pass
+
+
+class DuplicateServingCandidateReviewError(ValueError):
+    pass
+
+
+VALID_REVIEW_DECISIONS = ("approved", "correction_required", "rejected")
 
 
 @dataclass(frozen=True)
@@ -75,6 +82,17 @@ class ServingCandidateEvent:
     actor: str
     message: str
     occurred_at: str
+
+
+@dataclass(frozen=True)
+class ServingCandidateReview:
+    review_id: str
+    candidate_id: str
+    decision: str
+    reviewer: str
+    notes: str
+    decided_at: str
+    simulation_only: bool = True
 
 
 Clock = Callable[[], datetime]
@@ -145,6 +163,20 @@ class SQLiteServingCandidateRepository:
                     actor TEXT NOT NULL,
                     message TEXT NOT NULL,
                     occurred_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS serving_candidate_reviews (
+                    review_id TEXT PRIMARY KEY,
+                    candidate_id TEXT NOT NULL UNIQUE
+                        REFERENCES food_serving_candidates(candidate_id),
+                    decision TEXT NOT NULL CHECK(decision IN (
+                        'approved',
+                        'correction_required',
+                        'rejected'
+                    )),
+                    reviewer TEXT NOT NULL,
+                    notes TEXT NOT NULL,
+                    decided_at TEXT NOT NULL,
+                    simulation_only INTEGER NOT NULL CHECK(simulation_only = 1)
                 );
                 """
             )
@@ -247,6 +279,66 @@ class SQLiteServingCandidateRepository:
             for row in rows
         )
 
+    def record_review(
+        self,
+        review: ServingCandidateReview,
+    ) -> ServingCandidateReview:
+        self.get(review.candidate_id)
+        try:
+            with self._connect() as connection:
+                connection.execute(
+                    """INSERT INTO serving_candidate_reviews (
+                        review_id, candidate_id, decision, reviewer, notes,
+                        decided_at, simulation_only
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        review.review_id,
+                        review.candidate_id,
+                        review.decision,
+                        review.reviewer,
+                        review.notes,
+                        review.decided_at,
+                        int(review.simulation_only),
+                    ),
+                )
+                connection.execute(
+                    """INSERT INTO food_serving_candidate_events
+                    (candidate_id, event_type, actor, message, occurred_at)
+                    VALUES (?, 'candidate_reviewed', ?, ?, ?)""",
+                    (
+                        review.candidate_id,
+                        review.reviewer,
+                        f"{review.decision}: {review.notes}",
+                        review.decided_at,
+                    ),
+                )
+        except sqlite3.IntegrityError as error:
+            raise DuplicateServingCandidateReviewError(
+                f"candidate already reviewed or review ID conflicts: "
+                f"{review.candidate_id}"
+            ) from error
+        return review
+
+    def get_review(self, candidate_id: str) -> ServingCandidateReview | None:
+        self.get(candidate_id)
+        with self._connect() as connection:
+            row = connection.execute(
+                """SELECT * FROM serving_candidate_reviews
+                WHERE candidate_id = ?""",
+                (candidate_id,),
+            ).fetchone()
+        if row is None:
+            return None
+        return ServingCandidateReview(
+            review_id=row["review_id"],
+            candidate_id=row["candidate_id"],
+            decision=row["decision"],
+            reviewer=row["reviewer"],
+            notes=row["notes"],
+            decided_at=row["decided_at"],
+            simulation_only=bool(row["simulation_only"]),
+        )
+
     @staticmethod
     def _row_to_candidate(row: sqlite3.Row) -> FoodServingCandidate:
         return FoodServingCandidate(
@@ -326,6 +418,41 @@ class ServingCandidateService:
                 "meal-plan mapping remains unchanged"
             ),
         )
+
+    def review_candidate(
+        self,
+        *,
+        review_id: str,
+        candidate_id: str,
+        decision: str,
+        reviewer: str,
+        notes: str,
+    ) -> ServingCandidateReview:
+        values = (review_id, candidate_id, reviewer, notes)
+        if any(not value.strip() for value in values):
+            raise ValueError(
+                "review ID, candidate ID, reviewer, and notes cannot be blank"
+            )
+        if decision not in VALID_REVIEW_DECISIONS:
+            raise ValueError(
+                f"decision must be one of {VALID_REVIEW_DECISIONS}"
+            )
+
+        candidate = self.candidate_repository.get(candidate_id)
+        if decision == "approved" and candidate.review_status != "structurally_valid":
+            raise ServingCandidateEligibilityError(
+                "only structurally_valid candidates may be approved"
+            )
+
+        review = ServingCandidateReview(
+            review_id=review_id,
+            candidate_id=candidate_id,
+            decision=decision,
+            reviewer=reviewer,
+            notes=notes,
+            decided_at=self._timestamp(),
+        )
+        return self.candidate_repository.record_review(review)
 
     @staticmethod
     def _validate_input(
