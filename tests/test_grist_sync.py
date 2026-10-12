@@ -173,3 +173,90 @@ def test_serving_audit_mappings_match_grist_schemas():
     )[0]
     assert revision["ServingWeightGrams"] == 101.0
     assert isinstance(revision["CreatedAt"], float)
+
+
+def test_product_identity_audit_mappings_match_grist_schemas():
+    value = sqlite3.connect(":memory:")
+    value.row_factory = sqlite3.Row
+    value.executescript(
+        """
+        CREATE TABLE product_identity_verifications (
+            verification_id TEXT, candidate_id TEXT, source_system TEXT,
+            local_item_id TEXT, verified_item_id TEXT, local_upc TEXT,
+            verified_upc TEXT, brand_matches INTEGER,
+            item_name_matches INTEGER, status TEXT, evidence_json TEXT,
+            created_at TEXT, simulation_only INTEGER
+        );
+        CREATE TABLE product_identity_reviews (
+            review_id TEXT, verification_id TEXT, decision TEXT,
+            reviewer TEXT, notes TEXT, decided_at TEXT,
+            simulation_only INTEGER
+        );
+        CREATE TABLE product_identity_corrections (
+            correction_id TEXT, verification_id TEXT,
+            corrected_item_id TEXT, provenance TEXT, created_by TEXT,
+            created_at TEXT, simulation_only INTEGER
+        );
+        CREATE TABLE product_identity_correction_reviews (
+            review_id TEXT, correction_id TEXT, decision TEXT,
+            reviewer TEXT, notes TEXT, decided_at TEXT,
+            simulation_only INTEGER
+        );
+
+        INSERT INTO product_identity_verifications VALUES (
+            'IV-1', 'C-1', 'sheety', 'LOCAL-1', 'VERIFIED-1',
+            '123', '123', 1, 1, 'identity_verified', '{}',
+            '2026-10-12T12:00:00+00:00', 1
+        );
+        INSERT INTO product_identity_reviews VALUES (
+            'IR-1', 'IV-1', 'approved', 'operator', 'reviewed',
+            '2026-10-12T12:01:00+00:00', 1
+        );
+        INSERT INTO product_identity_corrections VALUES (
+            'IC-1', 'IV-1', 'CORRECTED-1', 'sheety_upc_match',
+            'operator', '2026-10-12T12:02:00+00:00', 1
+        );
+        INSERT INTO product_identity_correction_reviews VALUES (
+            'ICR-1', 'IC-1', 'approved', 'operator', 'reviewed',
+            '2026-10-12T12:03:00+00:00', 1
+        );
+        """
+    )
+
+    expected_columns = {
+        "ProductIdentityVerifications": {
+            "VerificationId", "CandidateId", "SourceSystem", "LocalItemId",
+            "VerifiedItemId", "LocalUpc", "VerifiedUpc", "BrandMatches",
+            "ItemNameMatches", "Status", "EvidenceJson", "CreatedAt",
+            "SimulationOnly",
+        },
+        "ProductIdentityReviews": {
+            "ReviewId", "VerificationId", "Decision", "Reviewer", "Notes",
+            "DecidedAt", "SimulationOnly",
+        },
+        "ProductIdentityCorrections": {
+            "CorrectionId", "VerificationId", "CorrectedItemId",
+            "Provenance", "CreatedBy", "CreatedAt", "SimulationOnly",
+        },
+        "ProductIdentityCorrectionReviews": {
+            "ReviewId", "CorrectionId", "Decision", "Reviewer", "Notes",
+            "DecidedAt", "SimulationOnly",
+        },
+    }
+
+    rows = {}
+    for table, columns in expected_columns.items():
+        mapping = next(item for item in TABLE_MAPPINGS if item.grist_table == table)
+        rows[table] = _source_rows(value, mapping)[0]
+        assert set(rows[table]) == columns
+        assert rows[table]["SimulationOnly"] is True
+
+    verification = rows["ProductIdentityVerifications"]
+    assert verification["BrandMatches"] is True
+    assert verification["ItemNameMatches"] is True
+    assert isinstance(verification["CreatedAt"], float)
+    assert isinstance(rows["ProductIdentityReviews"]["DecidedAt"], float)
+    assert isinstance(rows["ProductIdentityCorrections"]["CreatedAt"], float)
+    assert isinstance(
+        rows["ProductIdentityCorrectionReviews"]["DecidedAt"], float
+    )
