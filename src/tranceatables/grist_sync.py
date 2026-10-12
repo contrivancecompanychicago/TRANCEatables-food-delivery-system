@@ -144,6 +144,47 @@ TABLE_MAPPINGS: tuple[TableMapping, ...] = (
         {"DecidedAt": _epoch, "SimulationOnly": _boolean},
     ),
     TableMapping(
+        """SELECT verification_id AS VerificationId,
+        candidate_id AS CandidateId, source_system AS SourceSystem,
+        local_item_id AS LocalItemId, verified_item_id AS VerifiedItemId,
+        local_upc AS LocalUpc, verified_upc AS VerifiedUpc,
+        brand_matches AS BrandMatches,
+        item_name_matches AS ItemNameMatches, status AS Status,
+        evidence_json AS EvidenceJson, created_at AS CreatedAt,
+        simulation_only AS SimulationOnly
+        FROM product_identity_verifications ORDER BY verification_id""",
+        "ProductIdentityVerifications", "VerificationId",
+        {"BrandMatches": _boolean, "ItemNameMatches": _boolean,
+         "CreatedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT review_id AS ReviewId,
+        verification_id AS VerificationId, decision AS Decision,
+        reviewer AS Reviewer, notes AS Notes, decided_at AS DecidedAt,
+        simulation_only AS SimulationOnly
+        FROM product_identity_reviews ORDER BY review_id""",
+        "ProductIdentityReviews", "ReviewId",
+        {"DecidedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT correction_id AS CorrectionId,
+        verification_id AS VerificationId,
+        corrected_item_id AS CorrectedItemId, provenance AS Provenance,
+        created_by AS CreatedBy, created_at AS CreatedAt,
+        simulation_only AS SimulationOnly
+        FROM product_identity_corrections ORDER BY correction_id""",
+        "ProductIdentityCorrections", "CorrectionId",
+        {"CreatedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT review_id AS ReviewId, correction_id AS CorrectionId,
+        decision AS Decision, reviewer AS Reviewer, notes AS Notes,
+        decided_at AS DecidedAt, simulation_only AS SimulationOnly
+        FROM product_identity_correction_reviews ORDER BY review_id""",
+        "ProductIdentityCorrectionReviews", "ReviewId",
+        {"DecidedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
         """SELECT robot_id AS RobotId, name AS RobotName, status AS Status,
         battery_percent AS BatteryPercent, current_zone AS CurrentZone,
         payload_capacity_kg AS PayloadCapacityKg, operational AS Operational,
