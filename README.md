@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.13.0 mirrors immutable serving candidates, reviews, corrections, and correction reviews from authoritative SQLite into Grist without assigning products, advancing orders, or dispatching robots.
+TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.14.0 resolves approved effective serving records and reports controlled product-mapping blockers without assigning products, advancing orders, or dispatching robots.
 
 ## Stage 0 goal
 
@@ -205,6 +205,12 @@ The validated Milk revision records 426 g from the corrected Sheety row while re
 Version 0.13.0 extends the dry-run-first SQLite-to-Grist audit mirror with `ServingCandidates`, `ServingCandidateReviews`, `ServingCandidateRevisions`, and `ServingRevisionReviews`. Stable identifiers drive idempotent upserts, all four destination schemas are checked before any write, and `--apply` remains mandatory.
 
 SQLite remains authoritative. The mirror preserves the original mass-missing candidate, its correction-required review, the separate corrected revision, and the revision approval. It cannot map meal-plan products, advance orders, create missions, or dispatch robots. See [`docs/STAGE_2_9_1_GRIST_SERVING_SYNC.md`](docs/STAGE_2_9_1_GRIST_SERVING_SYNC.md).
+
+## Stage 2.10 controlled product-mapping readiness
+
+Version 0.14.0 adds a read-only SQLite evaluator that resolves one approved effective serving record for each food slot. An approved original record is used directly; a mass-missing original marked `correction_required` is replaced only by its separately approved revision.
+
+The validated demonstration resolves Orange Juice, the approved 426 g Milk revision, and Tomatoes. Serving records are ready, but product mapping remains blocked because target and quantity units are still `model_unit`, Magnesium compatibility is unvalidated, and no approved nutrient-to-product mapping artifact exists. The evaluator opens SQLite in read-only mode and cannot assign product IDs, advance an order, create a mission, or dispatch a robot. See [`docs/STAGE_2_10_MAPPING_READINESS.md`](docs/STAGE_2_10_MAPPING_READINESS.md).
 
 ## Farm-to-fork simulation
 
