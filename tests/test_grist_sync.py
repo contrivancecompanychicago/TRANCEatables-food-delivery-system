@@ -76,3 +76,100 @@ def test_order_event_mapping_matches_grist_schema():
         "EventType", "Message", "OccurredAt",
     }
     assert row["EventType"] == "order_created"
+
+
+def test_serving_audit_mappings_match_grist_schemas():
+    value = sqlite3.connect(":memory:")
+    value.row_factory = sqlite3.Row
+    value.executescript(
+        """
+        CREATE TABLE food_serving_candidates (
+            candidate_id TEXT, meal_plan_id TEXT, food_slot INTEGER,
+            source TEXT, source_item_id TEXT, source_upc TEXT,
+            brand_name TEXT, item_name TEXT, serving_quantity REAL,
+            serving_unit_label TEXT, serving_weight_grams REAL,
+            metric_quantity REAL, metric_unit TEXT, ontology_source TEXT,
+            review_status TEXT, created_at TEXT, updated_at TEXT,
+            simulation_only INTEGER
+        );
+        CREATE TABLE serving_candidate_reviews (
+            review_id TEXT, candidate_id TEXT, decision TEXT,
+            reviewer TEXT, notes TEXT, decided_at TEXT,
+            simulation_only INTEGER
+        );
+        CREATE TABLE serving_candidate_revisions (
+            revision_id TEXT, original_candidate_id TEXT,
+            source_item_id TEXT, serving_quantity REAL,
+            serving_unit_label TEXT, serving_weight_grams REAL,
+            metric_quantity REAL, metric_unit TEXT, provenance TEXT,
+            created_by TEXT, created_at TEXT, simulation_only INTEGER
+        );
+        CREATE TABLE serving_revision_reviews (
+            review_id TEXT, revision_id TEXT, decision TEXT,
+            reviewer TEXT, notes TEXT, decided_at TEXT,
+            simulation_only INTEGER
+        );
+
+        INSERT INTO food_serving_candidates VALUES (
+            'C-1', 'MP-1', 1, 'sheety', 'ITEM-1', '123',
+            'Brand', 'Food', 1.0, 'cup', 100.0,
+            100.0, 'g', 'tranceatables_internal',
+            'structurally_valid', '2026-10-12T12:00:00+00:00',
+            '2026-10-12T12:00:00+00:00', 1
+        );
+        INSERT INTO serving_candidate_reviews VALUES (
+            'CR-1', 'C-1', 'approved', 'operator',
+            'reviewed', '2026-10-12T12:01:00+00:00', 1
+        );
+        INSERT INTO serving_candidate_revisions VALUES (
+            'R-1', 'C-1', 'ITEM-1', 1.0, 'cup', 101.0,
+            100.0, 'g', 'verified_source', 'operator',
+            '2026-10-12T12:02:00+00:00', 1
+        );
+        INSERT INTO serving_revision_reviews VALUES (
+            'RR-1', 'R-1', 'approved', 'operator',
+            'reviewed', '2026-10-12T12:03:00+00:00', 1
+        );
+        """
+    )
+
+    expected_columns = {
+        "ServingCandidates": {
+            "CandidateId", "MealPlanId", "FoodSlot", "Source",
+            "SourceItemId", "SourceUpc", "BrandName", "ItemName",
+            "ServingQuantity", "ServingUnitLabel", "ServingWeightGrams",
+            "MetricQuantity", "MetricUnit", "OntologySource",
+            "ReviewStatus", "CreatedAt", "UpdatedAt", "SimulationOnly",
+        },
+        "ServingCandidateReviews": {
+            "ReviewId", "CandidateId", "Decision", "Reviewer", "Notes",
+            "DecidedAt", "SimulationOnly",
+        },
+        "ServingCandidateRevisions": {
+            "RevisionId", "OriginalCandidateId", "SourceItemId",
+            "ServingQuantity", "ServingUnitLabel", "ServingWeightGrams",
+            "MetricQuantity", "MetricUnit", "Provenance", "CreatedBy",
+            "CreatedAt", "SimulationOnly",
+        },
+        "ServingRevisionReviews": {
+            "ReviewId", "RevisionId", "Decision", "Reviewer", "Notes",
+            "DecidedAt", "SimulationOnly",
+        },
+    }
+
+    for table, columns in expected_columns.items():
+        mapping = next(item for item in TABLE_MAPPINGS if item.grist_table == table)
+        row = _source_rows(value, mapping)[0]
+        assert set(row) == columns
+        assert row["SimulationOnly"] is True
+
+    revision = _source_rows(
+        value,
+        next(
+            item
+            for item in TABLE_MAPPINGS
+            if item.grist_table == "ServingCandidateRevisions"
+        ),
+    )[0]
+    assert revision["ServingWeightGrams"] == 101.0
+    assert isinstance(revision["CreatedAt"], float)

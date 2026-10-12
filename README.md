@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Stage 2.9 adds immutable, provenance-bearing corrections for reviewed serving candidates without assigning products, advancing orders, or dispatching robots.
+TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.13.0 mirrors immutable serving candidates, reviews, corrections, and correction reviews from authoritative SQLite into Grist without assigning products, advancing orders, or dispatching robots.
 
 ## Stage 0 goal
 
@@ -199,6 +199,12 @@ Approval confirms only that the serving structure was reviewed. It does not vali
 Stage 2.9 creates a separate correction record for a `mass_missing` candidate only after a human marks the original `correction_required`. The original candidate and review remain unchanged. The corrected record carries its source provenance and receives a separate human decision.
 
 The validated Milk revision records 426 g from the corrected Sheety row while retaining the original 414 ml measure. Approval still does not map the meal plan, advance the order, or dispatch a robot. See [`docs/STAGE_2_9_SERVING_REVISION.md`](docs/STAGE_2_9_SERVING_REVISION.md).
+
+## Stage 2.9.1 Grist serving-review mirror
+
+Version 0.13.0 extends the dry-run-first SQLite-to-Grist audit mirror with `ServingCandidates`, `ServingCandidateReviews`, `ServingCandidateRevisions`, and `ServingRevisionReviews`. Stable identifiers drive idempotent upserts, all four destination schemas are checked before any write, and `--apply` remains mandatory.
+
+SQLite remains authoritative. The mirror preserves the original mass-missing candidate, its correction-required review, the separate corrected revision, and the revision approval. It cannot map meal-plan products, advance orders, create missions, or dispatch robots. See [`docs/STAGE_2_9_1_GRIST_SERVING_SYNC.md`](docs/STAGE_2_9_1_GRIST_SERVING_SYNC.md).
 
 ## Farm-to-fork simulation
 
