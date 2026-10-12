@@ -2,6 +2,12 @@
 
 from .feasibility import FeasibilityDecision, evaluate_delivery
 from .models import DeliveryRequest, FoodHandling, RobotState
+from .mapping_readiness import (
+    EffectiveServingRecord,
+    MappingReadinessError,
+    ProductMappingReadinessReport,
+    evaluate_product_mapping_readiness,
+)
 from .meal_plan import (
     DuplicateMealPlanError,
     MealPlanEligibilityError,
@@ -84,6 +90,7 @@ __all__ = [
     "DuplicateServingCandidateError",
     "DuplicateServingCandidateReviewError",
     "DuplicateServingRevisionError",
+    "EffectiveServingRecord",
     "FeasibilityDecision",
     "FoodHandling",
     "FoodServingCandidate",
@@ -98,12 +105,14 @@ __all__ = [
     "MealPlanEvent",
     "MealPlanNotFoundError",
     "MealPlanService",
+    "MappingReadinessError",
     "NutrientSolverError",
     "Order",
     "OrderEvent",
     "OrderNotFoundError",
     "OrderService",
     "OrderStatus",
+    "ProductMappingReadinessReport",
     "RobotMission",
     "RobotMissionService",
     "RobotNotFoundError",
@@ -135,5 +144,6 @@ __all__ = [
     "can_transition",
     "can_transition_mission",
     "evaluate_delivery",
+    "evaluate_product_mapping_readiness",
     "solve_meal_references",
 ]
