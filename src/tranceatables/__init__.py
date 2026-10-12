@@ -23,6 +23,15 @@ from .nutrient_solver import (
     solve_meal_references,
 )
 from .order_state import InvalidTransition, Order, OrderStatus, can_transition
+from .product_identity import (
+    ProductIdentityCorrection,
+    ProductIdentityCorrectionReview,
+    ProductIdentityError,
+    ProductIdentityReview,
+    ProductIdentityService,
+    ProductIdentityVerification,
+    SQLiteProductIdentityRepository,
+)
 from .repository import (
     ConcurrentUpdateError,
     DuplicateOrderError,
@@ -113,6 +122,12 @@ __all__ = [
     "OrderService",
     "OrderStatus",
     "ProductMappingReadinessReport",
+    "ProductIdentityVerification",
+    "ProductIdentityService",
+    "ProductIdentityReview",
+    "ProductIdentityError",
+    "ProductIdentityCorrectionReview",
+    "ProductIdentityCorrection",
     "RobotMission",
     "RobotMissionService",
     "RobotNotFoundError",
@@ -136,6 +151,7 @@ __all__ = [
     "SimulatedMealPlan",
     "SimulatedRobot",
     "SQLiteMealPlanRepository",
+    "SQLiteProductIdentityRepository",
     "SQLiteOrderRepository",
     "SQLiteRobotMissionRepository",
     "SQLiteServingCandidateRepository",

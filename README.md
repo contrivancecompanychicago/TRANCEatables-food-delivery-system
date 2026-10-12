@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.14.0 resolves approved effective serving records and reports controlled product-mapping blockers without assigning products, advancing orders, or dispatching robots.
+TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.15.0 adds immutable source-product identity evidence, review, correction, and correction review without assigning products, advancing orders, or dispatching robots.
 
 ## Stage 0 goal
 
@@ -211,6 +211,12 @@ SQLite remains authoritative. The mirror preserves the original mass-missing can
 Version 0.14.0 adds a read-only SQLite evaluator that resolves one approved effective serving record for each food slot. An approved original record is used directly; a mass-missing original marked `correction_required` is replaced only by its separately approved revision.
 
 The validated demonstration resolves Orange Juice, the approved 426 g Milk revision, and Tomatoes. Serving records are ready, but product mapping remains blocked because target and quantity units are still `model_unit`, Magnesium compatibility is unvalidated, and no approved nutrient-to-product mapping artifact exists. The evaluator opens SQLite in read-only mode and cannot assign product IDs, advance an order, create a mission, or dispatch a robot. See [`docs/STAGE_2_10_MAPPING_READINESS.md`](docs/STAGE_2_10_MAPPING_READINESS.md).
+
+## Stage 2.11 source-product identity verification
+
+Version 0.15.0 records source identity evidence for each serving candidate. Exact matches may be approved directly. A matching UPC, brand, and item name with a different source item ID is recorded as `source_item_id_mismatch`, requires an `identity_correction_required` review, and may receive a separate corrected identity plus its own approval.
+
+The original candidate is never overwritten. The workflow creates no meal-plan product assignment, order transition, robot mission, Grist write, or Sheety write. See [`docs/STAGE_2_11_PRODUCT_IDENTITY.md`](docs/STAGE_2_11_PRODUCT_IDENTITY.md).
 
 ## Farm-to-fork simulation
 
