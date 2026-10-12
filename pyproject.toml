@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tranceatables-food-delivery-system"
-version = "0.14.0"
-description = "Simulation-only food delivery with controlled product-mapping readiness"
+version = "0.15.0"
+description = "Simulation-only food delivery with immutable source-product identity review"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 dependencies = []
