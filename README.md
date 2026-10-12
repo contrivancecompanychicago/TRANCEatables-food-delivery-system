@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.15.0 adds immutable source-product identity evidence, review, correction, and correction review without assigning products, advancing orders, or dispatching robots.
+TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.16.0 adds a dry-run-first Grist mirror for immutable source-product identity evidence, reviews, corrections, and correction reviews without assigning products, advancing orders, or dispatching robots.
 
 ## Stage 0 goal
 
@@ -217,6 +217,12 @@ The validated demonstration resolves Orange Juice, the approved 426 g Milk revis
 Version 0.15.0 records source identity evidence for each serving candidate. Exact matches may be approved directly. A matching UPC, brand, and item name with a different source item ID is recorded as `source_item_id_mismatch`, requires an `identity_correction_required` review, and may receive a separate corrected identity plus its own approval.
 
 The original candidate is never overwritten. The workflow creates no meal-plan product assignment, order transition, robot mission, Grist write, or Sheety write. See [`docs/STAGE_2_11_PRODUCT_IDENTITY.md`](docs/STAGE_2_11_PRODUCT_IDENTITY.md).
+
+## Stage 2.11.1 Grist identity-audit mirror
+
+Version 0.16.0 extends the one-way SQLite-to-Grist audit mirror with `ProductIdentityVerifications`, `ProductIdentityReviews`, `ProductIdentityCorrections`, and `ProductIdentityCorrectionReviews`. Stable identifiers provide idempotent create/update behavior, and all destination schemas are validated before any write begins.
+
+Synchronization remains read-only by default. SQLite stays authoritative, and a write requires the explicit `--apply` option. The mirror cannot alter serving candidates, assign meal-plan products, advance orders, create robot missions, or dispatch robots. See [`docs/STAGE_2_11_1_GRIST_IDENTITY_SYNC.md`](docs/STAGE_2_11_1_GRIST_IDENTITY_SYNC.md).
 
 ## Farm-to-fork simulation
 
