@@ -99,6 +99,51 @@ TABLE_MAPPINGS: tuple[TableMapping, ...] = (
         "MealPlanEvents", "EventId", {"OccurredAt": _epoch},
     ),
     TableMapping(
+        """SELECT candidate_id AS CandidateId, meal_plan_id AS MealPlanId,
+        food_slot AS FoodSlot, source AS Source, source_item_id AS SourceItemId,
+        source_upc AS SourceUpc, brand_name AS BrandName, item_name AS ItemName,
+        serving_quantity AS ServingQuantity,
+        serving_unit_label AS ServingUnitLabel,
+        serving_weight_grams AS ServingWeightGrams,
+        metric_quantity AS MetricQuantity, metric_unit AS MetricUnit,
+        ontology_source AS OntologySource, review_status AS ReviewStatus,
+        created_at AS CreatedAt, updated_at AS UpdatedAt,
+        simulation_only AS SimulationOnly
+        FROM food_serving_candidates ORDER BY candidate_id""",
+        "ServingCandidates", "CandidateId",
+        {"CreatedAt": _epoch, "UpdatedAt": _epoch,
+         "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT review_id AS ReviewId, candidate_id AS CandidateId,
+        decision AS Decision, reviewer AS Reviewer, notes AS Notes,
+        decided_at AS DecidedAt, simulation_only AS SimulationOnly
+        FROM serving_candidate_reviews ORDER BY review_id""",
+        "ServingCandidateReviews", "ReviewId",
+        {"DecidedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT revision_id AS RevisionId,
+        original_candidate_id AS OriginalCandidateId,
+        source_item_id AS SourceItemId, serving_quantity AS ServingQuantity,
+        serving_unit_label AS ServingUnitLabel,
+        serving_weight_grams AS ServingWeightGrams,
+        metric_quantity AS MetricQuantity, metric_unit AS MetricUnit,
+        provenance AS Provenance, created_by AS CreatedBy,
+        created_at AS CreatedAt, simulation_only AS SimulationOnly
+        FROM serving_candidate_revisions ORDER BY revision_id""",
+        "ServingCandidateRevisions", "RevisionId",
+        {"CreatedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT review_id AS ReviewId, revision_id AS RevisionId,
+        decision AS Decision, reviewer AS Reviewer, notes AS Notes,
+        decided_at AS DecidedAt, simulation_only AS SimulationOnly
+        FROM serving_revision_reviews ORDER BY review_id""",
+        "ServingRevisionReviews", "ReviewId",
+        {"DecidedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
         """SELECT robot_id AS RobotId, name AS RobotName, status AS Status,
         battery_percent AS BatteryPercent, current_zone AS CurrentZone,
         payload_capacity_kg AS PayloadCapacityKg, operational AS Operational,
