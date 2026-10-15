@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.16.0 adds a dry-run-first Grist mirror for immutable source-product identity evidence, reviews, corrections, and correction reviews without assigning products, advancing orders, or dispatching robots.
+TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.17.0 adds deterministic nutrient and unit definitions, source-measurement mappings, human review, and append-only ontology events without assigning products, advancing orders, or dispatching robots.
 
 ## Stage 0 goal
 
@@ -223,6 +223,12 @@ The original candidate is never overwritten. The workflow creates no meal-plan p
 Version 0.16.0 extends the one-way SQLite-to-Grist audit mirror with `ProductIdentityVerifications`, `ProductIdentityReviews`, `ProductIdentityCorrections`, and `ProductIdentityCorrectionReviews`. Stable identifiers provide idempotent create/update behavior, and all destination schemas are validated before any write begins.
 
 Synchronization remains read-only by default. SQLite stays authoritative, and a write requires the explicit `--apply` option. The mirror cannot alter serving candidates, assign meal-plan products, advance orders, create robot missions, or dispatch robots. See [`docs/STAGE_2_11_1_GRIST_IDENTITY_SYNC.md`](docs/STAGE_2_11_1_GRIST_IDENTITY_SYNC.md).
+
+## Stage 2.12 nutrient measurement ontology
+
+Version 0.17.0 introduces an authoritative SQLite ontology for nutrient definitions, measurement units, source observations, human mapping reviews, and append-only audit events. It explicitly separates absolute mass, Daily Value percentage, and abstract model measurements.
+
+The ontology refuses to treat `%DV` as milligrams, refuses to convert `model_unit` into a physical unit, and records missing Magnesium evidence as `source_missing`. Cross-unit normalization remains blocked until a separately validated conversion rule is implemented. See [`docs/STAGE_2_12_NUTRIENT_ONTOLOGY.md`](docs/STAGE_2_12_NUTRIENT_ONTOLOGY.md).
 
 ## Farm-to-fork simulation
 

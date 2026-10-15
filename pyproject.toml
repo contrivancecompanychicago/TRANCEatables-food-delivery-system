@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tranceatables-food-delivery-system"
-version = "0.16.0"
-description = "Simulation-only food delivery with a Grist identity-audit mirror"
+version = "0.17.0"
+description = "Simulation-only food delivery with an audited nutrient ontology"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 dependencies = []
