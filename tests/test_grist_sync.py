@@ -260,3 +260,106 @@ def test_product_identity_audit_mappings_match_grist_schemas():
     assert isinstance(
         rows["ProductIdentityCorrectionReviews"]["DecidedAt"], float
     )
+
+
+
+def test_nutrient_ontology_mappings_match_grist_schemas():
+    value = sqlite3.connect(":memory:")
+    value.row_factory = sqlite3.Row
+    value.executescript(
+        """
+        CREATE TABLE measurement_unit_definitions (
+            unit_code TEXT, display_name TEXT, dimension TEXT, symbol TEXT,
+            conversion_status TEXT, provenance TEXT, created_at TEXT,
+            simulation_only INTEGER
+        );
+        CREATE TABLE nutrient_definitions (
+            nutrient_id TEXT, canonical_name TEXT, measurement_basis TEXT,
+            canonical_unit_code TEXT, provenance TEXT, created_at TEXT,
+            simulation_only INTEGER
+        );
+        CREATE TABLE nutrient_measurement_mappings (
+            mapping_id TEXT, meal_plan_id TEXT, food_slot INTEGER,
+            nutrient_id TEXT, source_item_id TEXT, source_field TEXT,
+            source_value REAL, source_unit_code TEXT,
+            normalized_value REAL, normalized_unit_code TEXT,
+            status TEXT, provenance TEXT, created_at TEXT,
+            simulation_only INTEGER
+        );
+        CREATE TABLE nutrient_mapping_reviews (
+            review_id TEXT, mapping_id TEXT, decision TEXT, reviewer TEXT,
+            notes TEXT, decided_at TEXT, simulation_only INTEGER
+        );
+        CREATE TABLE nutrient_ontology_events (
+            event_id INTEGER, entity_type TEXT, entity_id TEXT,
+            event_type TEXT, actor TEXT, message TEXT, occurred_at TEXT
+        );
+
+        INSERT INTO measurement_unit_definitions VALUES (
+            'mg', 'milligram', 'mass', 'mg', 'canonical',
+            'internal ontology', '2026-10-15T12:00:00+00:00', 1
+        );
+        INSERT INTO nutrient_definitions VALUES (
+            'NUTRIENT-CALCIUM', 'Calcium', 'absolute_mass', 'mg',
+            'internal ontology', '2026-10-15T12:01:00+00:00', 1
+        );
+        INSERT INTO nutrient_measurement_mappings VALUES (
+            'NM-1', 'MP-1', 1, 'NUTRIENT-CALCIUM', 'ITEM-1',
+            'nfCalciumDv', 2.0, 'percent_dv', NULL, NULL,
+            'unconvertible', 'sheety evidence',
+            '2026-10-15T12:02:00+00:00', 1
+        );
+        INSERT INTO nutrient_mapping_reviews VALUES (
+            'NMR-1', 'NM-1', 'correction_required', 'operator',
+            'absolute mass evidence required',
+            '2026-10-15T12:03:00+00:00', 1
+        );
+        INSERT INTO nutrient_ontology_events VALUES (
+            1, 'nutrient_mapping', 'NM-1', 'mapping_created',
+            'system', 'mapping recorded', '2026-10-15T12:02:00+00:00'
+        );
+        """
+    )
+
+    expected_columns = {
+        "MeasurementUnitDefinitions": {
+            "UnitCode", "DisplayName", "Dimension", "Symbol",
+            "ConversionStatus", "Provenance", "CreatedAt", "SimulationOnly",
+        },
+        "NutrientDefinitions": {
+            "NutrientId", "CanonicalName", "MeasurementBasis",
+            "CanonicalUnitCode", "Provenance", "CreatedAt", "SimulationOnly",
+        },
+        "NutrientMeasurementMappings": {
+            "MappingId", "MealPlanId", "FoodSlot", "NutrientId",
+            "SourceItemId", "SourceField", "SourceValue", "SourceUnitCode",
+            "NormalizedValue", "NormalizedUnitCode", "Status", "Provenance",
+            "CreatedAt", "SimulationOnly",
+        },
+        "NutrientMappingReviews": {
+            "ReviewId", "MappingId", "Decision", "Reviewer", "Notes",
+            "DecidedAt", "SimulationOnly",
+        },
+        "NutrientOntologyEvents": {
+            "EventId", "EntityType", "EntityId", "EventType", "Actor",
+            "Message", "OccurredAt",
+        },
+    }
+
+    rows = {}
+    for table, columns in expected_columns.items():
+        mapping = next(item for item in TABLE_MAPPINGS if item.grist_table == table)
+        rows[table] = _source_rows(value, mapping)[0]
+        assert set(rows[table]) == columns
+
+    assert rows["MeasurementUnitDefinitions"]["SimulationOnly"] is True
+    assert rows["NutrientDefinitions"]["SimulationOnly"] is True
+    assert rows["NutrientMeasurementMappings"]["SimulationOnly"] is True
+    assert rows["NutrientMappingReviews"]["SimulationOnly"] is True
+    assert rows["NutrientMeasurementMappings"]["NormalizedValue"] is None
+    assert rows["NutrientMeasurementMappings"]["Status"] == "unconvertible"
+    assert isinstance(rows["MeasurementUnitDefinitions"]["CreatedAt"], float)
+    assert isinstance(rows["NutrientDefinitions"]["CreatedAt"], float)
+    assert isinstance(rows["NutrientMeasurementMappings"]["CreatedAt"], float)
+    assert isinstance(rows["NutrientMappingReviews"]["DecidedAt"], float)
+    assert isinstance(rows["NutrientOntologyEvents"]["OccurredAt"], float)
