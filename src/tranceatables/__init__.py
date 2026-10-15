@@ -30,6 +30,12 @@ from .nutrient_ontology import (
     NutrientOntologyError,
     SQLiteNutrientOntologyRepository,
 )
+from .nutrient_evidence import (
+    NutrientEvidenceError,
+    NutrientEvidenceRecord,
+    NutrientEvidenceReview,
+    SQLiteNutrientEvidenceRepository,
+)
 from .order_state import InvalidTransition, Order, OrderStatus, can_transition
 from .product_identity import (
     ProductIdentityCorrection,
@@ -125,6 +131,9 @@ __all__ = [
     "MappingReadinessError",
     "MeasurementUnitDefinition",
     "NutrientDefinition",
+    "NutrientEvidenceError",
+    "NutrientEvidenceRecord",
+    "NutrientEvidenceReview",
     "NutrientMappingReview",
     "NutrientMeasurementMapping",
     "NutrientOntologyError",
@@ -164,6 +173,7 @@ __all__ = [
     "SimulatedMealPlan",
     "SimulatedRobot",
     "SQLiteMealPlanRepository",
+    "SQLiteNutrientEvidenceRepository",
     "SQLiteNutrientOntologyRepository",
     "SQLiteProductIdentityRepository",
     "SQLiteOrderRepository",
