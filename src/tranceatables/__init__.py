@@ -22,6 +22,14 @@ from .nutrient_solver import (
     NutrientSolverError,
     solve_meal_references,
 )
+from .nutrient_ontology import (
+    MeasurementUnitDefinition,
+    NutrientDefinition,
+    NutrientMappingReview,
+    NutrientMeasurementMapping,
+    NutrientOntologyError,
+    SQLiteNutrientOntologyRepository,
+)
 from .order_state import InvalidTransition, Order, OrderStatus, can_transition
 from .product_identity import (
     ProductIdentityCorrection,
@@ -115,6 +123,11 @@ __all__ = [
     "MealPlanNotFoundError",
     "MealPlanService",
     "MappingReadinessError",
+    "MeasurementUnitDefinition",
+    "NutrientDefinition",
+    "NutrientMappingReview",
+    "NutrientMeasurementMapping",
+    "NutrientOntologyError",
     "NutrientSolverError",
     "Order",
     "OrderEvent",
@@ -151,6 +164,7 @@ __all__ = [
     "SimulatedMealPlan",
     "SimulatedRobot",
     "SQLiteMealPlanRepository",
+    "SQLiteNutrientOntologyRepository",
     "SQLiteProductIdentityRepository",
     "SQLiteOrderRepository",
     "SQLiteRobotMissionRepository",
