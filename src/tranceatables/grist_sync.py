@@ -185,6 +185,53 @@ TABLE_MAPPINGS: tuple[TableMapping, ...] = (
         {"DecidedAt": _epoch, "SimulationOnly": _boolean},
     ),
     TableMapping(
+        """SELECT unit_code AS UnitCode, display_name AS DisplayName,
+        dimension AS Dimension, symbol AS Symbol,
+        conversion_status AS ConversionStatus, provenance AS Provenance,
+        created_at AS CreatedAt, simulation_only AS SimulationOnly
+        FROM measurement_unit_definitions ORDER BY unit_code""",
+        "MeasurementUnitDefinitions", "UnitCode",
+        {"CreatedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT nutrient_id AS NutrientId, canonical_name AS CanonicalName,
+        measurement_basis AS MeasurementBasis,
+        canonical_unit_code AS CanonicalUnitCode, provenance AS Provenance,
+        created_at AS CreatedAt, simulation_only AS SimulationOnly
+        FROM nutrient_definitions ORDER BY nutrient_id""",
+        "NutrientDefinitions", "NutrientId",
+        {"CreatedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT mapping_id AS MappingId, meal_plan_id AS MealPlanId,
+        food_slot AS FoodSlot, nutrient_id AS NutrientId,
+        source_item_id AS SourceItemId, source_field AS SourceField,
+        source_value AS SourceValue, source_unit_code AS SourceUnitCode,
+        normalized_value AS NormalizedValue,
+        normalized_unit_code AS NormalizedUnitCode, status AS Status,
+        provenance AS Provenance, created_at AS CreatedAt,
+        simulation_only AS SimulationOnly
+        FROM nutrient_measurement_mappings ORDER BY mapping_id""",
+        "NutrientMeasurementMappings", "MappingId",
+        {"CreatedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT review_id AS ReviewId, mapping_id AS MappingId,
+        decision AS Decision, reviewer AS Reviewer, notes AS Notes,
+        decided_at AS DecidedAt, simulation_only AS SimulationOnly
+        FROM nutrient_mapping_reviews ORDER BY review_id""",
+        "NutrientMappingReviews", "ReviewId",
+        {"DecidedAt": _epoch, "SimulationOnly": _boolean},
+    ),
+    TableMapping(
+        """SELECT event_id AS EventId, entity_type AS EntityType,
+        entity_id AS EntityId, event_type AS EventType, actor AS Actor,
+        message AS Message, occurred_at AS OccurredAt
+        FROM nutrient_ontology_events ORDER BY event_id""",
+        "NutrientOntologyEvents", "EventId",
+        {"OccurredAt": _epoch},
+    ),
+    TableMapping(
         """SELECT robot_id AS RobotId, name AS RobotName, status AS Status,
         battery_percent AS BatteryPercent, current_zone AS CurrentZone,
         payload_capacity_kg AS PayloadCapacityKg, operational AS Operational,
