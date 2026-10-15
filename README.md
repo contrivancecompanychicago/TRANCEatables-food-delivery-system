@@ -1,6 +1,6 @@
 # TRANCEatables Food Delivery System
 
-TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.18.0 adds a dry-run-first, one-way Grist mirror for the nutrient ontology audit trail without assigning products, advancing orders, or dispatching robots.
+TRANCEatables is a simulation-only food-service and autonomous-delivery research prototype. Version 0.19.0 adds exact nutrient-evidence gating and auditable evidence gaps without assigning products, advancing orders, or dispatching robots.
 
 ## Stage 0 goal
 
@@ -235,6 +235,12 @@ The ontology refuses to treat `%DV` as milligrams, refuses to convert `model_uni
 Version 0.18.0 extends the one-way SQLite-to-Grist audit mirror with `MeasurementUnitDefinitions`, `NutrientDefinitions`, `NutrientMeasurementMappings`, `NutrientMappingReviews`, and `NutrientOntologyEvents`. Stable identifiers provide idempotent create/update behavior, every destination schema is validated before writes begin, and synchronization remains read-only unless `--apply` is supplied.
 
 SQLite remains authoritative. The mirror preserves unresolved `percent_dv` and `source_missing` evidence without converting it to milligrams. It cannot assign products, advance orders, create robot missions, or dispatch robots. See [`docs/STAGE_2_12_1_GRIST_NUTRIENT_ONTOLOGY_SYNC.md`](docs/STAGE_2_12_1_GRIST_NUTRIENT_ONTOLOGY_SYNC.md).
+
+## Stage 2.12.2 exact nutrient-evidence gating
+
+Version 0.19.0 adds authoritative SQLite records for exact branded-product nutrient evidence, separate human reviews, and append-only audit events. Evidence gaps are valid records with null values; they are never filled with estimates. Reported evidence must use absolute milligrams, retain its serving basis and source reference, and be marked `validated` before an approval is accepted.
+
+`%DV` is not treated as milligrams, a missing label declaration is not treated as zero, and similar products cannot substitute for an exact identity match. The workflow cannot assign meal-plan products, advance orders, create missions, or dispatch robots. See [`docs/STAGE_2_12_2_NUTRIENT_EVIDENCE.md`](docs/STAGE_2_12_2_NUTRIENT_EVIDENCE.md).
 
 ## Farm-to-fork simulation
 
